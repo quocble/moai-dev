@@ -206,8 +206,7 @@ public:
 	@const	RIGHT_JUSTIFY
 */
 class MOAITextBox :
-	public MOAIProp,
-	public MOAIAction {
+	public MOAIProp {
 private:
 
 	friend class MOAITextDesigner;
@@ -238,25 +237,25 @@ private:
 	int					mNextPageIdx;
 	bool				mNeedsLayout;
 	
-	USLeanArray < MOAIAnimCurve* > mCurves;
-	
-	// style set - these are the styles the texbox knows about
-	// only need to get these during text styling, so using an STLMap for now...
-	typedef STLMap < STLString, MOAITextStyleRef >::iterator StyleSetIt;
-	STLMap < STLString, MOAITextStyleRef > mStyleSet;
-	
-	// anonymous styles - these are created on the fly as text is being styled
-	USLeanStack < MOAITextStyleRef, 8 > mAnonymousStyles;
-	
-	// this is the style map. it is produced by analyzing the text and creating a
-	// 'style span' for each styled token. this is the preprocessing step to
-	// actually layout out a page of text. text is laid out based on the style spans.
-	USLeanStack < MOAITextStyleSpan, 64 > mStyleMap; // each span represents a stretch of 'styled' text
-	
-	// this is the text page layout. these are the action sprites and lines
-	// that will be rendered for the current page.
-	USLeanStack < MOAITextSprite, 64 >	mSprites;
-	USLeanStack < MOAITextLine, 8 >		mLines;
+	//USLeanArray < MOAIAnimCurve* > mCurves;
+	//
+	//// style set - these are the styles the texbox knows about
+	//// only need to get these during text styling, so using an STLMap for now...
+	//typedef STLMap < STLString, MOAITextStyleRef >::iterator StyleSetIt;
+	//STLMap < STLString, MOAITextStyleRef > mStyleSet;
+	//
+	//// anonymous styles - these are created on the fly as text is being styled
+	//USLeanStack < MOAITextStyleRef, 8 > mAnonymousStyles;
+	//
+	//// this is the style map. it is produced by analyzing the text and creating a
+	//// 'style span' for each styled token. this is the preprocessing step to
+	//// actually layout out a page of text. text is laid out based on the style spans.
+	//USLeanStack < MOAITextStyleSpan, 64 > mStyleMap; // each span represents a stretch of 'styled' text
+	//
+	//// this is the text page layout. these are the action sprites and lines
+	//// that will be rendered for the current page.
+	//USLeanStack < MOAITextSprite, 64 >	mSprites;
+	//USLeanStack < MOAITextLine, 8 >		mLines;
 	bool								mMore;
 	
 	// list of highlight spans
@@ -334,7 +333,7 @@ public:
 		WORD_BREAK_CHAR,
 	};
 
-	DECL_LUA_FACTORY ( MOAITextBox )
+	//DECL_LUA_FACTORY ( MOAITextBox )
 	
 	//----------------------------------------------------------------//
 	void				ClearCurves				();

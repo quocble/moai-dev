@@ -30,12 +30,12 @@ void MOAIGfxDeleter::Delete () {
 		
 		case DELETE_BUFFER:
 			zglDeleteBuffer ( this->mResourceID );
-			break;
-#ifndef __FLASCC__		
+			break;	
+		
 		case DELETE_FRAMEBUFFER:
 			zglDeleteFramebuffer ( this->mResourceID );
 			break;
-#endif		
+		
 		case DELETE_PROGRAM:
 			zglDeleteProgram ( this->mResourceID );
 			break;
@@ -46,13 +46,11 @@ void MOAIGfxDeleter::Delete () {
 		
 		case DELETE_TEXTURE:
 			zglDeleteTexture ( this->mResourceID );
-			break;
+			break;	
 		
-#ifndef __FLASCC__		
 		case DELETE_RENDERBUFFER:
 			zglDeleteRenderbuffer ( this->mResourceID );
 			break;
-#endif
 	}
 }
 
@@ -585,6 +583,7 @@ USMatrix4x4 MOAIGfxDevice::GetWndToWorldMtx () const {
 
 //----------------------------------------------------------------//
 void MOAIGfxDevice::GpuLoadMatrix ( const USMatrix4x4& mtx ) const {
+	UNUSED ( mtx );
 	#if USE_OPENGLES1
 		zglLoadMatrix ( mtx.m );
 	#endif
@@ -592,6 +591,7 @@ void MOAIGfxDevice::GpuLoadMatrix ( const USMatrix4x4& mtx ) const {
 
 //----------------------------------------------------------------//
 void MOAIGfxDevice::GpuMultMatrix ( const USMatrix4x4& mtx ) const {
+	UNUSED ( mtx );
 	#if USE_OPENGLES1
 		zglMultMatrix ( mtx.m );
 	#endif
@@ -1011,7 +1011,6 @@ void MOAIGfxDevice::SetDepthMask ( bool depthMask ) {
 
 //----------------------------------------------------------------//
 void MOAIGfxDevice::SetFrameBuffer ( MOAIFrameBuffer* frameBuffer ) {
-#ifndef __FLASCC__
 	this->Flush ();
 
 	if ( this->mIsFramebufferSupported ) {
@@ -1022,9 +1021,8 @@ void MOAIGfxDevice::SetFrameBuffer ( MOAIFrameBuffer* frameBuffer ) {
 		else {
 			zglBindFramebuffer ( ZGL_FRAMEBUFFER_TARGET_DRAW_READ, this->mDefaultBuffer->mGLFrameBufferID );
 			this->mFrameBuffer = this->mDefaultBuffer;
-		}	
+		}
 	}
-#endif
 }
 
 //----------------------------------------------------------------//
@@ -1069,7 +1067,7 @@ void MOAIGfxDevice::SetPenWidth ( float penWidth ) {
 
 //----------------------------------------------------------------//
 void MOAIGfxDevice::SetPointSize ( float pointSize ) {
-
+	UNUSED ( pointSize );
 	#if USE_OPENGLES1
 		if ( this->mPointSize != pointSize ) {
 			this->Flush ();

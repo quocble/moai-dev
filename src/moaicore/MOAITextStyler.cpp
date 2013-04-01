@@ -25,22 +25,6 @@
 //----------------------------------------------------------------//
 void MOAITextStyler::BuildStyleMap ( MOAITextBox& textBox ) {
 
-	// throw out any existing style map
-	textBox.mStyleMap.Reset ();
-	
-	MOAITextStyle* defaultStyle = textBox.GetStyle ();
-	if ( !defaultStyle ) return;
-	
-	this->mIdx = 0;
-	this->mPrev = 0;
-	this->mTextBox = &textBox;
-	this->mStr = textBox.mText;
-	
-	this->mTokenBase = 0;
-	this->mTokenTop = 0;
-	
-	this->PushStyle ( defaultStyle );
-	this->Parse ();
 }
 
 //----------------------------------------------------------------//

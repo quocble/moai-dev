@@ -19,23 +19,24 @@
 //----------------------------------------------------------------//
 void MOAIStaticGlyphCache::ClearTextures () {
 
-	for ( u32 i = 0; i < this->mTextures.Size (); ++i ) {
-		this->LuaRelease ( this->mTextures [ i ]); // TODO: ref counting?
-	}
-	this->mTextures.Clear ();
+	//for ( u32 i = 0; i < this->mTextures.Size (); ++i ) {
+	//	this->LuaRelease ( this->mTextures [ i ]); // TODO: ref counting?
+	//}
+	//this->mTextures.Clear ();
 }
 
 //----------------------------------------------------------------//
 MOAIImage* MOAIStaticGlyphCache::GetGlyphImage ( MOAIGlyph& glyph ) {
-	UNUSED ( glyph );
+	//UNUSED ( glyph );
 	return 0;
 }
 
 //----------------------------------------------------------------//
 MOAITextureBase* MOAIStaticGlyphCache::GetGlyphTexture ( MOAIGlyph& glyph ) {
 
-	assert ( glyph.GetPageID () < this->mTextures.Size ());
-	return this->mTextures [ glyph.GetPageID ()];
+	//assert ( glyph.GetPageID () < this->mTextures.Size ());
+	//return this->mTextures [ glyph.GetPageID ()];
+	return 0;
 }
 
 //----------------------------------------------------------------//
@@ -47,7 +48,8 @@ MOAIImage* MOAIStaticGlyphCache::GetImage () {
 //----------------------------------------------------------------//
 MOAITexture* MOAIStaticGlyphCache::GetTexture ( u32 id ) {
 
-	return this->mTextures [ id ];
+	//return this->mTextures [ id ];
+	return 0;
 }
 
 //----------------------------------------------------------------//
@@ -59,15 +61,15 @@ bool MOAIStaticGlyphCache::IsDynamic () {
 //----------------------------------------------------------------//
 MOAIStaticGlyphCache::MOAIStaticGlyphCache () {
 	
-	RTTI_BEGIN
-		RTTI_EXTEND ( MOAIGlyphCacheBase )
-	RTTI_END
+	//RTTI_BEGIN
+	//	RTTI_EXTEND ( MOAIGlyphCacheBase )
+	//RTTI_END
 }
 
 //----------------------------------------------------------------//
 MOAIStaticGlyphCache::~MOAIStaticGlyphCache () {
 
-	this->ClearTextures ();
+	//this->ClearTextures ();
 }
 
 //----------------------------------------------------------------//
@@ -94,8 +96,8 @@ void MOAIStaticGlyphCache::RemoveGlyph ( MOAIGlyph& glyph ) {
 //----------------------------------------------------------------//
 void MOAIStaticGlyphCache::ReserveTextures ( u32 total ) {
 
-	this->mTextures.Init ( total );
-	this->mTextures.Fill ( 0 );
+	//this->mTextures.Init ( total );
+	//this->mTextures.Fill ( 0 );
 }
 
 
@@ -114,34 +116,34 @@ void MOAIStaticGlyphCache::SerializeOut ( MOAILuaState& state, MOAISerializer& s
 //----------------------------------------------------------------//
 void MOAIStaticGlyphCache::SetImage ( MOAIFont& font, MOAIImage& image ) {
 
-	this->ClearTextures ();
+	//this->ClearTextures ();
 
-	u32 width = image.GetWidth ();
-	u32 height = image.GetHeight ();
+	//u32 width = image.GetWidth ();
+	//u32 height = image.GetHeight ();
 
-	if ( !( width && height )) return;
+	//if ( !( width && height )) return;
 
-	u32 totalTextures = ( height / width ) + 1;
-	this->mTextures.Init ( totalTextures );
-	
-	u32 y = 0;
-	for ( u32 i = 0; i < totalTextures; ++i ) {
-		
-		MOAITexture* texture = new MOAITexture ();
-		this->mTextures [ i ] = texture;
-		
-		u32 textureHeight = height - y;
-		textureHeight = textureHeight > width ? width : textureHeight;
-		
-		texture->Init ( image, 0, y, width, textureHeight, font.GetFilename ());
-		texture->SetFilter ( ZGL_SAMPLE_LINEAR, ZGL_SAMPLE_LINEAR );
-		
-		y += textureHeight;
-	}
+	//u32 totalTextures = ( height / width ) + 1;
+	//this->mTextures.Init ( totalTextures );
+	//
+	//u32 y = 0;
+	//for ( u32 i = 0; i < totalTextures; ++i ) {
+	//	
+	//	MOAITexture* texture = new MOAITexture ();
+	//	this->mTextures [ i ] = texture;
+	//	
+	//	u32 textureHeight = height - y;
+	//	textureHeight = textureHeight > width ? width : textureHeight;
+	//	
+	//	texture->Init ( image, 0, y, width, textureHeight, font.GetFilename ());
+	//	texture->SetFilter ( ZGL_SAMPLE_LINEAR, ZGL_SAMPLE_LINEAR );
+	//	
+	//	y += textureHeight;
+	//}
 }
 
 //----------------------------------------------------------------//
 void MOAIStaticGlyphCache::SetTexture ( int id, MOAITexture* texture ) {
-	this->LuaRetain ( texture ); // TODO: ref counting?
-	this->mTextures [ id ] = texture;
+	//this->LuaRetain ( texture ); // TODO: ref counting?
+	//this->mTextures [ id ] = texture;
 }

@@ -212,6 +212,10 @@ enum {
 };
 
 //----------------------------------------------------------------//
+extern void		zglFinalize				();
+extern void		zglInitialize			();
+
+//----------------------------------------------------------------//
 extern void		zglActiveTexture		( u32 textureUnit );
 extern void		zglBlendFunc			( u32 sourceFactor, u32 destFactor );
 extern void		zglBlendMode			( u32 mode );

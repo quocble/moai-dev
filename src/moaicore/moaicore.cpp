@@ -56,210 +56,352 @@ static void _typeCheck () {
 // moaicore
 //================================================================//
 
+class MOAIPropFoo :
+	public MOAITransform,
+	public MOAIColor {
+private:
+
+	friend class MOAIPartition;
+	friend class MOAIPartitionCell;
+	friend class MOAIPartitionLevel;
+
+	MOAIPartition*				mPartition;
+	MOAIPartitionCell*			mCell;
+	
+	// this is only for debug draw
+	MOAIPartitionLevel*			mLayer;
+	
+	USLeanLink < MOAIPropFoo* >	mLinkInCell;
+	MOAIPropFoo*					mNextResult;
+
+	u32				mMask;
+	USBox			mBounds;
+	s32				mPriority;
+
+	//----------------------------------------------------------------//
+	void			DrawGrid			( int subPrimID );
+	void			DrawItem			();
+
+protected:
+
+	u32										mFlags;
+
+	MOAILuaSharedPtr < MOAIDeck >			mDeck;
+	MOAILuaSharedPtr < MOAIDeckRemapper >	mRemapper;
+	u32										mIndex;
+	
+	MOAILuaSharedPtr < MOAIGrid >			mGrid;
+	USVec2D									mGridScale;
+	
+	// TODO: these should all be attributes
+	MOAILuaSharedPtr < MOAIShader >			mShader;
+	MOAILuaSharedPtr < MOAIGfxState >		mTexture;
+	MOAILuaSharedPtr < MOAITransformBase >	mUVTransform;
+	MOAILuaSharedPtr < MOAIScissorRect >	mScissorRect;
+	
+	int										mCullMode;
+	int										mDepthTest;
+	bool									mDepthMask;
+	MOAIBlendMode							mBlendMode;
+
+	USBox									mBoundsOverride;
+
+	//----------------------------------------------------------------//
+	//u32				GetFrameFitting			( USBox& bounds, USVec3D& offset, USVec3D& scale );
+	void			GetGridBoundsInView		( MOAICellCoord& c0, MOAICellCoord& c1 );
+	virtual u32		GetPropBounds			( USBox& bounds ); // get the prop bounds in model space
+	void			LoadGfxState			();
+	void			UpdateBounds			( u32 status );
+	void			UpdateBounds			( const USBox& bounds, u32 status );
+
+public:
+
+	DECL_LUA_FACTORY ( MOAIPropFoo )
+	DECL_ATTR_HELPER ( MOAIPropFoo )
+
+	static const s32 UNKNOWN_PRIORITY	= 0x80000000;
+	static const int NO_SUBPRIM_ID		= 0xffffffff;
+
+	enum {
+		BOUNDS_EMPTY,
+		BOUNDS_GLOBAL,
+		BOUNDS_OK,
+	};
+
+	enum {
+		ATTR_INDEX,
+		ATTR_PARTITION,
+		ATTR_SHADER,
+		ATTR_BLEND_MODE,
+		
+		ATTR_LOCAL_VISIBLE,		// direct access to the prop's 'local' visbility setting
+		ATTR_VISIBLE,			// read only - reflects the composite state of visibility
+		INHERIT_VISIBLE,		// used to *pull* parent visibility via inheritance
+		
+		INHERIT_FRAME,
+		FRAME_TRAIT,
+		
+		TOTAL_ATTR,
+	};
+
+	enum {
+		CAN_DRAW					= 0x01,
+		CAN_DRAW_DEBUG				= 0x02,
+		CAN_GATHER_SURFACES			= 0x04,
+	};
+
+	enum {
+		FLAGS_OVERRIDE_BOUNDS		= 0x01,
+		FLAGS_EXPAND_FOR_SORT		= 0x02,
+		FLAGS_BILLBOARD				= 0x04,
+		FLAGS_LOCAL_VISIBLE			= 0x08,
+		FLAGS_VISIBLE				= 0x10, // this is a composite of FLAGS_LOCAL_VISIBLE plus the parent's ATTR_VISIBLE
+	};
+
+	static const u32 DEFAULT_FLAGS	= FLAGS_LOCAL_VISIBLE | FLAGS_VISIBLE;
+
+	GET_SET ( u32, Index, mIndex )
+	GET_SET ( u32, Mask, mMask )
+	GET ( s32, Priority, mPriority )
+	GET ( MOAIPartition*, Partition, mPartition )
+	
+	GET ( MOAIDeck*, Deck, mDeck )
+	GET ( MOAIDeckRemapper*, Remapper, mRemapper )
+	GET ( USBox, Bounds, mBounds )
+	GET ( USVec3D, BoundsMax, mBounds.mMax )
+	GET ( USVec3D, BoundsMin, mBounds.mMin )
+
+	//----------------------------------------------------------------//
+	void				AddToSortBuffer			( MOAIPartitionResultBuffer& buffer, u32 key = 0 );
+	bool				ApplyAttrOp				( u32 attrID, MOAIAttrOp& attrOp, u32 op );
+	virtual void		Draw					( int subPrimID );
+	virtual void		DrawDebug				( int subPrimID );
+	virtual void		GatherSurfaces			( MOAISurfaceSampler2D& sampler );
+	MOAIPartition*		GetPartitionTrait		();
+	bool				GetCellRect				( USRect* cellRect, USRect* paddedRect = 0 );
+	virtual void		GetCollisionShape		( MOAICollisionShape& shape );
+	virtual bool		Inside					( USVec3D vec, float pad );
+						MOAIPropFoo				();
+	virtual				~MOAIPropFoo				();
+	void				OnDepNodeUpdate			();
+	void				RegisterLuaClass		( MOAILuaState& state );
+	void				RegisterLuaFuncs		( MOAILuaState& state );
+	void				Render					();
+	void				SerializeIn				( MOAILuaState& state, MOAIDeserializer& serializer );
+	void				SerializeOut			( MOAILuaState& state, MOAISerializer& serializer );
+	void				SetPartition			( MOAIPartition* partition );
+	void				SetVisible				( bool visible );
+};
+
+//================================================================//
+// MOAIPropFoo
+//================================================================//
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::AddToSortBuffer ( MOAIPartitionResultBuffer& buffer, u32 key ) {
+}
+
+//----------------------------------------------------------------//
+bool MOAIPropFoo::ApplyAttrOp ( u32 attrID, MOAIAttrOp& attrOp, u32 op ) {
+	return false;
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::Draw ( int subPrimID ) {
+	UNUSED ( subPrimID );
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::DrawDebug ( int subPrimID ) {
+	UNUSED ( subPrimID );
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::DrawGrid ( int subPrimID ) {
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::DrawItem () {
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::GatherSurfaces ( MOAISurfaceSampler2D& sampler ) {
+}
+
+//----------------------------------------------------------------//
+bool MOAIPropFoo::GetCellRect ( USRect* cellRect, USRect* paddedRect ) {
+	
+	return false;
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::GetCollisionShape ( MOAICollisionShape& shape ) {
+	UNUSED ( shape );
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::GetGridBoundsInView ( MOAICellCoord& c0, MOAICellCoord& c1 ) {
+}
+
+//----------------------------------------------------------------//
+u32 MOAIPropFoo::GetPropBounds ( USBox& bounds ) {
+	
+	printf ( "GET BOUNDS\n" );
+	
+	this->mGrid.Set ( *this, 0 );
+	this->mDeck.Set ( *this, 0 );
+	
+	if ( this->mFlags & FLAGS_OVERRIDE_BOUNDS ) {
+		bounds = this->mBoundsOverride;
+		return BOUNDS_OK;
+	}
+	
+	if ( this->mGrid ) {
+		
+		//if ( this->mGrid->GetRepeat ()) {
+		//	return BOUNDS_GLOBAL;
+		//}
+		
+		USRect rect = this->mGrid->GetBounds ();
+		bounds.Init ( rect.mXMin, rect.mYMin, rect.mXMax, rect.mYMax, 0.0f, 0.0f );
+		//return this->mGrid->GetRepeat () ? BOUNDS_GLOBAL : BOUNDS_OK;
+	}
+	else if ( this->mDeck ) {
+	
+		//bounds = this->mDeck->GetBounds ( this->mIndex, this->mRemapper );
+		//return BOUNDS_OK;
+	}
+	
+	return BOUNDS_EMPTY;
+}
+
+//----------------------------------------------------------------//
+MOAIPartition* MOAIPropFoo::GetPartitionTrait () {
+
+	return this->mPartition;
+}
+
+//----------------------------------------------------------------//
+bool MOAIPropFoo::Inside ( USVec3D vec, float pad ) {
+
+	USAffine3D worldToLocal = this->GetWorldToLocalMtx ();
+	worldToLocal.Transform ( vec );
+
+	USBox bounds;
+
+	u32 status = this->GetPropBounds ( bounds );
+	
+	if ( status == BOUNDS_GLOBAL ) return true;
+	if ( status == BOUNDS_EMPTY ) return false;
+	
+	bounds.Bless ();
+	bounds.Inflate ( pad );
+	return bounds.Contains ( vec );
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::LoadGfxState () {
+}
+
+//----------------------------------------------------------------//
+MOAIPropFoo::MOAIPropFoo () {
+}
+
+//----------------------------------------------------------------//
+MOAIPropFoo::~MOAIPropFoo () {
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::OnDepNodeUpdate () {
+	
+	MOAIColor::OnDepNodeUpdate ();
+	MOAITransform::OnDepNodeUpdate ();
+	
+	USBox propBounds;
+	u32 propBoundsStatus = this->GetPropBounds ( propBounds );
+	
+	// update the prop location in the partition
+	propBounds.Transform ( this->mLocalToWorldMtx );
+	this->UpdateBounds ( propBounds, propBoundsStatus );
+	
+	bool visible = USFloat::ToBoolean ( this->GetLinkedValue ( MOAIPropFooAttr::Pack ( INHERIT_VISIBLE ), 1.0f ));
+	this->mFlags = visible && ( this->mFlags & FLAGS_LOCAL_VISIBLE ) ? this->mFlags | FLAGS_VISIBLE : this->mFlags & ~FLAGS_VISIBLE ;	
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::RegisterLuaClass ( MOAILuaState& state ) {
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::RegisterLuaFuncs ( MOAILuaState& state ) {
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::Render () {
+
+	this->Draw ( MOAIPropFoo::NO_SUBPRIM_ID );
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::SerializeIn ( MOAILuaState& state, MOAIDeserializer& serializer ) {
+	
+	this->mDeck.Set ( *this, serializer.MemberIDToObject < MOAIDeck >( state.GetField < uintptr >( -1, "mDeck", 0 )));
+	this->mGrid.Set ( *this, serializer.MemberIDToObject < MOAIGrid >( state.GetField < uintptr >( -1, "mGrid", 0 )));
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::SerializeOut ( MOAILuaState& state, MOAISerializer& serializer ) {
+	
+	state.SetField ( -1, "mDeck", serializer.AffirmMemberID ( this->mDeck ));
+	state.SetField ( -1, "mGrid", serializer.AffirmMemberID ( this->mGrid ));
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::SetPartition ( MOAIPartition* partition ) {
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::SetVisible ( bool visible ) {
+
+	this->mFlags = visible ? this->mFlags | FLAGS_LOCAL_VISIBLE : this->mFlags & ~FLAGS_LOCAL_VISIBLE;
+	this->ScheduleUpdate ();
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::UpdateBounds ( u32 status ) {
+
+	USBox bounds;
+	bounds.Init ( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
+
+	if ( status == BOUNDS_OK ) {
+		status = BOUNDS_EMPTY;
+	}
+	this->UpdateBounds ( bounds, status );
+}
+
+//----------------------------------------------------------------//
+void MOAIPropFoo::UpdateBounds ( const USBox& bounds, u32 status ) {
+}
+
+
+
+
+
 //----------------------------------------------------------------//
 void moaicore::InitGlobals ( MOAIGlobals* globals ) {
 
 	MOAIGlobalsMgr::Set ( globals );
-
-	MOAILuaRuntime::Affirm ();
-	MOAIProfiler::Affirm ();
-	MOAILogMgr::Affirm ();
-	MOAIGfxDevice::Affirm ();
 	
-	#if MOAI_WITH_LIBCURL
-		MOAIUrlMgrCurl::Affirm ();
-	#endif
+	if ( !globals ) {
 	
-	#if MOAI_OS_NACL
-		MOAIUrlMgrNaCl::Affirm ();
-	#endif
+		printf ( "THIS CODE IS NEVER EXECUTED\n" );
+		
+		static MOAIGlyphCacheBase* glyphCache = new MOAIStaticGlyphCache ();
+	}
 	
-	MOAIMath::Affirm ();
+	printf ( "THIS CODE IS TOTALLY EXECUTED\n" );
 	
-	#if MOAI_WITH_TINYXML
-		MOAIXmlParser::Affirm ();
-	#endif
-	
-	MOAIActionMgr::Affirm ();
-	MOAIInputMgr::Affirm ();
-	MOAINodeMgr::Affirm ();
-	MOAIVertexFormatMgr::Affirm ();
-	MOAIShaderMgr::Affirm ();
-	MOAIDraw::Affirm ();
-	MOAIDebugLines::Affirm ();
-	MOAIPartitionResultMgr::Affirm ();
-	MOAISim::Affirm ();
-	MOAIRenderMgr::Affirm ();
-	
-	#if MOAI_WITH_CHIPMUNK
-		MOAICp::Affirm ();
-	#endif
-	
-	// Start Lua
-	MOAILuaRuntime& luaRuntime = MOAILuaRuntime::Get ();
-	luaRuntime.Open ();
-	luaRuntime.LoadLibs ( "moai" );
-	
-	MOAILogMessages::RegisterDefaultLogMessages ();
-	
-	// MOAI
-	REGISTER_LUA_CLASS ( MOAIAction )
-	REGISTER_LUA_CLASS ( MOAIActionMgr )
-	REGISTER_LUA_CLASS ( MOAIAnim )
-	REGISTER_LUA_CLASS ( MOAIAnimCurve )
-	REGISTER_LUA_CLASS ( MOAIAnimCurveQuat )
-	REGISTER_LUA_CLASS ( MOAIAnimCurveVec )
-	REGISTER_LUA_CLASS ( MOAIBitmapFontReader )
-	REGISTER_LUA_CLASS ( MOAIBoundsDeck )
-	REGISTER_LUA_CLASS ( MOAIButtonSensor )
-	REGISTER_LUA_CLASS ( MOAICamera )
-	REGISTER_LUA_CLASS ( MOAICameraAnchor2D )
-	REGISTER_LUA_CLASS ( MOAICameraFitter2D )
-	REGISTER_LUA_CLASS ( MOAIColor )
-	REGISTER_LUA_CLASS ( MOAICompassSensor )
-	REGISTER_LUA_CLASS ( MOAICoroutine )
-	REGISTER_LUA_CLASS ( MOAIDataBuffer )
-	REGISTER_LUA_CLASS ( MOAIDataBufferStream )
-	REGISTER_LUA_CLASS ( MOAIDataIOTask )
-	REGISTER_LUA_CLASS ( MOAIDebugLines )
-	REGISTER_LUA_CLASS ( MOAIDeckRemapper )
-	REGISTER_LUA_CLASS ( MOAIDeserializer )
-	REGISTER_LUA_CLASS ( MOAIDraw )
-	REGISTER_LUA_CLASS ( MOAIGlyphCache )
-	REGISTER_LUA_CLASS ( MOAIEnvironment )
-	REGISTER_LUA_CLASS ( MOAIEaseDriver )
-	REGISTER_LUA_CLASS ( MOAIEaseType )
-	REGISTER_LUA_CLASS ( MOAIFileStream )
-	REGISTER_LUA_CLASS ( MOAIFileSystem )
-	REGISTER_LUA_CLASS ( MOAIFoo )
-	REGISTER_LUA_CLASS ( MOAIFooMgr )
-	REGISTER_LUA_CLASS ( MOAIFont )
-	REGISTER_LUA_CLASS ( MOAIFrameBuffer )
-
-	#ifndef __FLASCC__
-		REGISTER_LUA_CLASS ( MOAIFrameBufferTexture )
-	#endif
-
-	REGISTER_LUA_CLASS ( MOAIGfxDevice )
-	REGISTER_LUA_CLASS ( MOAIGfxQuad2D )
-	REGISTER_LUA_CLASS ( MOAIGfxQuadDeck2D )
-	REGISTER_LUA_CLASS ( MOAIGfxQuadListDeck2D )
-	REGISTER_LUA_CLASS ( MOAIGrid )
-	REGISTER_LUA_CLASS ( MOAIGridDeck2D )
-	REGISTER_LUA_CLASS ( MOAIGridSpace )
-	REGISTER_LUA_CLASS ( MOAIGridPathGraph )
-	REGISTER_LUA_CLASS ( MOAIHashWriter )
-	REGISTER_LUA_CLASS ( MOAIImage )
-	REGISTER_LUA_CLASS ( MOAIImageTexture )
-	REGISTER_LUA_CLASS ( MOAIIndexBuffer )
-	REGISTER_LUA_CLASS ( MOAIInputDevice )
-	REGISTER_LUA_CLASS ( MOAIInputMgr )
-	REGISTER_LUA_CLASS ( MOAIJoystickSensor )
-	REGISTER_LUA_CLASS ( MOAIKeyboardSensor )
-	REGISTER_LUA_CLASS ( MOAILayer )
-	REGISTER_LUA_CLASS ( MOAILayerBridge )
-	//REGISTER_LUA_CLASS ( MOAILayoutFrame )
-	REGISTER_LUA_CLASS ( MOAILocationSensor )
-	REGISTER_LUA_CLASS ( MOAILogMgr )
-	REGISTER_LUA_CLASS ( MOAIMath )
-	REGISTER_LUA_CLASS ( MOAIMemStream )
-	REGISTER_LUA_CLASS ( MOAIMesh )
-	REGISTER_LUA_CLASS ( MOAIMotionSensor )
-	REGISTER_LUA_CLASS ( MOAIMultiTexture )
-	REGISTER_LUA_CLASS ( MOAIParticleCallbackPlugin )
-	REGISTER_LUA_CLASS ( MOAIParticleDistanceEmitter )
-	REGISTER_LUA_CLASS ( MOAIParticleForce )
-	REGISTER_LUA_CLASS ( MOAIParticleScript )
-	REGISTER_LUA_CLASS ( MOAIParticleState )
-	REGISTER_LUA_CLASS ( MOAIParticleSystem )
-	REGISTER_LUA_CLASS ( MOAIParticleTimedEmitter )
-	REGISTER_LUA_CLASS ( MOAIPartition )
-	REGISTER_LUA_CLASS ( MOAIPathFinder )
-	REGISTER_LUA_CLASS ( MOAIPathTerrainDeck )
-	REGISTER_LUA_CLASS ( MOAIPointerSensor )
-	REGISTER_LUA_CLASS ( MOAIProfilerReportBox )
-	REGISTER_LUA_CLASS ( MOAIProp )
-	REGISTER_LUA_CLASS ( MOAIRenderMgr )
-	REGISTER_LUA_CLASS ( MOAIScissorRect )
-	REGISTER_LUA_CLASS ( MOAIScriptDeck )
-	REGISTER_LUA_CLASS ( MOAIScriptNode )
-	REGISTER_LUA_CLASS ( MOAISerializer )
-	REGISTER_LUA_CLASS ( MOAIShader )
-	REGISTER_LUA_CLASS ( MOAIShaderMgr )
-	REGISTER_LUA_CLASS ( MOAISim )
-	REGISTER_LUA_CLASS ( MOAIStaticGlyphCache )
-	REGISTER_LUA_CLASS ( MOAIStreamReader )
-	REGISTER_LUA_CLASS ( MOAIStreamWriter )
-	REGISTER_LUA_CLASS ( MOAIStretchPatch2D )
-	REGISTER_LUA_CLASS ( MOAISurfaceDeck2D )
-	REGISTER_LUA_CLASS ( MOAITaskSubscriber )
-	REGISTER_LUA_CLASS ( MOAITaskQueue )
-	REGISTER_LUA_CLASS ( MOAITaskThread )
-	REGISTER_LUA_CLASS ( MOAITextBundle )
-	REGISTER_LUA_CLASS ( MOAITextBox )
-	REGISTER_LUA_CLASS ( MOAITextStyle )
-	REGISTER_LUA_CLASS ( MOAITexture )
-	REGISTER_LUA_CLASS ( MOAITileDeck2D )
-	REGISTER_LUA_CLASS ( MOAITimer )
-	REGISTER_LUA_CLASS ( MOAITouchSensor )
-	REGISTER_LUA_CLASS ( MOAITransform )
-	REGISTER_LUA_CLASS ( MOAIVertexBuffer )
-	REGISTER_LUA_CLASS ( MOAIVertexFormat )
-	REGISTER_LUA_CLASS ( MOAIViewport )
-	REGISTER_LUA_CLASS ( MOAIWheelSensor )
-	
-	#if MOAI_WITH_BOX2D
-		REGISTER_LUA_CLASS ( MOAIBox2DArbiter )
-		REGISTER_LUA_CLASS ( MOAIBox2DBody )
-		REGISTER_LUA_CLASS ( MOAIBox2DDistanceJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DFixture )
-		REGISTER_LUA_CLASS ( MOAIBox2DFrictionJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DGearJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DMouseJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DPrismaticJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DPulleyJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DRopeJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DRevoluteJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DWeldJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DWheelJoint )
-		REGISTER_LUA_CLASS ( MOAIBox2DWorld )
-	#endif
-	
-	#if MOAI_WITH_CHIPMUNK	
-		REGISTER_LUA_CLASS ( MOAICp )
-		REGISTER_LUA_CLASS ( MOAICpArbiter )
-		REGISTER_LUA_CLASS ( MOAICpBody )
-		REGISTER_LUA_CLASS ( MOAICpConstraint )
-		REGISTER_LUA_CLASS ( MOAICpShape )
-		REGISTER_LUA_CLASS ( MOAICpSpace )
-	#endif
-	
-	#if MOAI_WITH_FREETYPE
-		REGISTER_LUA_CLASS ( MOAIFreeTypeFontReader )
-	#endif
-
-	#if MOAI_WITH_LIBCURL
-		REGISTER_LUA_CLASS ( MOAIHttpTaskCurl )
-	#endif
-
-	#if MOAI_OS_NACL
-		REGISTER_LUA_CLASS ( MOAIHttpTaskNaCl )
-	#endif
-	
-	#if MOAI_WITH_JANSSON
-		REGISTER_LUA_CLASS ( MOAIJsonParser )
-	#endif
-	
-	#if MOAI_WITH_GPB
-		REGISTER_LUA_CLASS ( MOAIParser )
-	#endif
-	
-	#if MOAI_WITH_TINYXML
-		REGISTER_LUA_CLASS ( MOAIParticlePexPlugin )
-  	REGISTER_LUA_CLASS ( MOAIXmlParser )
-	#endif
-	
-	MOAIEnvironment::Get ().DetectEnvironment ();
+	static MOAIPropFoo* prop = new MOAIPropFoo ();
 }
 
 //----------------------------------------------------------------//
