@@ -396,7 +396,7 @@ void moaicore::InitGlobals ( MOAIGlobals* globals ) {
 	
 		printf ( "THIS CODE IS NEVER EXECUTED\n" );
 		
-		static MOAIGlyphCacheBase* glyphCache = new MOAIStaticGlyphCache ();
+		static MOAIGlyphCacheBase* glyphCache = new MOAIStaticGlyphCache (); // comment out this like and the sample will run
 	}
 	
 	printf ( "THIS CODE IS TOTALLY EXECUTED\n" );
