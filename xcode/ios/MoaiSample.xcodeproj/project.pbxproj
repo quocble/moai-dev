@@ -130,6 +130,10 @@
 		89ADB9EF174303D200E8058B /* libmoai-ios-http-client.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 891956541742C47A00A6BC5B /* libmoai-ios-http-client.a */; };
 		89ADB9F01743042A00E8058B /* libmoai-ios-twitter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8919565C1742C47A00A6BC5B /* libmoai-ios-twitter.a */; };
 		89ADB9F2174304B200E8058B /* ParticlePresets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 89ADB9F1174304B200E8058B /* ParticlePresets.cpp */; };
+		AB8D16DB1887C1380020A270 /* load_640_1136.png in Resources */ = {isa = PBXBuildFile; fileRef = AB8D16DA1887C1380020A270 /* load_640_1136.png */; };
+		AB8D16DC1887C1380020A270 /* load_640_1136.png in Resources */ = {isa = PBXBuildFile; fileRef = AB8D16DA1887C1380020A270 /* load_640_1136.png */; };
+		AB8D16DD1887C1380020A270 /* load_640_1136.png in Resources */ = {isa = PBXBuildFile; fileRef = AB8D16DA1887C1380020A270 /* load_640_1136.png */; };
+		AB8D16DE1887C1380020A270 /* load_640_1136.png in Resources */ = {isa = PBXBuildFile; fileRef = AB8D16DA1887C1380020A270 /* load_640_1136.png */; };
 		CD464CE0147259EA00501E4E /* libmoai-ios-zlcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CD04AF1214725736009C20E5 /* libmoai-ios-zlcore.a */; };
 		CD508A1A155E3AF90002FC3B /* Icon-72.png in Resources */ = {isa = PBXBuildFile; fileRef = 03CC904F13B3C1B700B2724C /* Icon-72.png */; };
 		CD508A1B155E3AF90002FC3B /* Icon-Small-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 03CC905013B3C1B700B2724C /* Icon-Small-50.png */; };
@@ -894,6 +898,7 @@
 		665383F4160A7B65003D5529 /* libfacebook_ios_sdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfacebook_ios_sdk.a; path = "../../3rdparty/facebookiOS-3.0.6.b/libfacebook_ios_sdk.a"; sourceTree = "<group>"; };
 		665383F6160A8466003D5529 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		89ADB9F1174304B200E8058B /* ParticlePresets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ParticlePresets.cpp; path = "../../src/host-glut/ParticlePresets.cpp"; sourceTree = "<group>"; };
+		AB8D16DA1887C1380020A270 /* load_640_1136.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = load_640_1136.png; sourceTree = "<group>"; };
 		CD508AA2155E3AF90002FC3B /* moai-fmod-ex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "moai-fmod-ex.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CDDD307E1574AC7300C410A0 /* moai-fmod-designer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "moai-fmod-designer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E92D47E5153CA75B00CB1E8A /* close_button.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = close_button.png; path = "../../3rdparty/tapjoyiOS-8.1.9/TapjoyConnect/Components/TJCCore/Views/close_button.png"; sourceTree = "<group>"; };
@@ -1186,6 +1191,7 @@
 				CDB607BA14527D39006EBFB5 /* Tapjoy */,
 				03CC90AA13B3C38800B2724C /* Entitlements.plist */,
 				03CC904F13B3C1B700B2724C /* Icon-72.png */,
+				AB8D16DA1887C1380020A270 /* load_640_1136.png */,
 				03CC905013B3C1B700B2724C /* Icon-Small-50.png */,
 				03CC905113B3C1B700B2724C /* Icon-Small.png */,
 				03CC905213B3C1B700B2724C /* Icon-Small@2x.png */,
@@ -1714,6 +1720,7 @@
 				E92D47E8153CA75B00CB1E8A /* TJCLoadingView.xib in Resources */,
 				E92D47EA153CA77600CB1E8A /* featured_app.sql in Resources */,
 				E92D47F1153CA78600CB1E8A /* back_default.png in Resources */,
+				AB8D16DB1887C1380020A270 /* load_640_1136.png in Resources */,
 				E92D47F2153CA78600CB1E8A /* button_highlight.png in Resources */,
 				E92D47F3153CA78600CB1E8A /* done_default.png in Resources */,
 				E92D47F4153CA78600CB1E8A /* tapjoy_icon.png in Resources */,
@@ -1749,6 +1756,7 @@
 				4251458217E608070065B1C6 /* TJCLoadingView.xib in Resources */,
 				4251458317E608070065B1C6 /* featured_app.sql in Resources */,
 				4251458417E608070065B1C6 /* back_default.png in Resources */,
+				AB8D16DC1887C1380020A270 /* load_640_1136.png in Resources */,
 				4251458517E608070065B1C6 /* button_highlight.png in Resources */,
 				4251458617E608070065B1C6 /* done_default.png in Resources */,
 				4251458717E608070065B1C6 /* tapjoy_icon.png in Resources */,
@@ -1795,6 +1803,7 @@
 				CD508A36155E3AF90002FC3B /* viewstyle_icon_page.png in Resources */,
 				CD508A37155E3AF90002FC3B /* viewstyle_icon_table.png in Resources */,
 				CD508A38155E3AF90002FC3B /* TJCVGItemButton.xib in Resources */,
+				AB8D16DE1887C1380020A270 /* load_640_1136.png in Resources */,
 				CD508A39155E3AF90002FC3B /* TJCVGItemDetail.xib in Resources */,
 				CD508A3A155E3AF90002FC3B /* TJCVGPageView.xib in Resources */,
 				CD508A3B155E3AF90002FC3B /* TJCVGTableViewCell.xib in Resources */,
@@ -1829,6 +1838,7 @@
 				CDDD30121574AC7300C410A0 /* viewstyle_icon_page.png in Resources */,
 				CDDD30131574AC7300C410A0 /* viewstyle_icon_table.png in Resources */,
 				CDDD30141574AC7300C410A0 /* TJCVGItemButton.xib in Resources */,
+				AB8D16DD1887C1380020A270 /* load_640_1136.png in Resources */,
 				CDDD30151574AC7300C410A0 /* TJCVGItemDetail.xib in Resources */,
 				CDDD30161574AC7300C410A0 /* TJCVGPageView.xib in Resources */,
 				CDDD30171574AC7300C410A0 /* TJCVGTableViewCell.xib in Resources */,
