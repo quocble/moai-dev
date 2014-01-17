@@ -4,6 +4,24 @@ table = require "hp/lang/table"
 array = require "hp/lang/array"
 string = require("hp/lang/string")
 
+
+-- TODO LIST
+-- Build words above the board as user drag.
+   -- after let go
+   -- check against dictionary
+      -- if not good word Glow / shake 
+      -- if good word, calculate score (happy dance)
+-- facebook integration
+   -- send to server
+-- python build bot
+   -- build algorithm 
+   -- build client 
+-- python server
+   -- websocket pairing games
+   -- client to server (full point for 1st, 2nd 50% )   
+-- select diagonal
+
+
 --------------------------------------------------------------------------------
 -- Const
 --------------------------------------------------------------------------------
