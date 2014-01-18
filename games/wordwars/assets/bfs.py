@@ -6,6 +6,10 @@ import multiprocessing
 from functools import partial
 from joblib import Parallel, delayed
 from multiprocessing import cpu_count
+import peewee
+from peewee import *
+import json 
+import sys
 
 MAX_ROW = 4
 MAX_COL = 4
@@ -83,27 +87,13 @@ def search_words_at_start(board, search, all_paths, current_path = []):
             search_words_at_start(board, adjacent, all_paths, path)
     return all_paths
 
-# def search_words_at_start(board, start):
-#     all_paths = []
-#     queue = []
-#     queue.append([start])
-#     new_path = [start]
-#     while queue:
-#         path = queue.pop(0)
-#         node = path[-1]
-#         for adjacent in adjacent_letters(board, node):
-#             if adjacent not in new_path:
-#                 new_path.append(adjacent)
-#                 queue.append(new_path)
-#                 print(new_path)
-#     return all_paths
-
 board = []
 def gen():
-    b = []
-    for n in range(16):
-        b.append(random.choice(string.ascii_uppercase))
-    return b
+    distr = 'aaaaaaaaabbccddddeeeeeeeeeeeeffggghhiiiiiiiiijkllllmmnnnnnnooooooooppqrrrrrrssssttttttuuuuvvwwxyyz'
+    bag = list(distr.upper())
+    random.shuffle(bag)                
+    board = bag[:16]
+    return board
 
 def to2d(board_flat):
     new_board = [['' for i in xrange(4)] for i in xrange(4)]
@@ -112,19 +102,50 @@ def to2d(board_flat):
         r = int(math.floor(n / MAX_ROW))
         new_board[r][c] = board_flat[n]
     return new_board
-     
-board = gen()
-board = ['A','S','T', 'I', 'Y', 'B', 'E', 'N', 'D', 'E','R', 'P','A', 'R', 'F', 'O']
-print(board)
-b2d = to2d(board)
 
-for r in range(MAX_COL):
-    for c in range(MAX_ROW):
-        print b2d[r][c] + ' ',
-    print ''
+def generate_all_combos(board):
+    all_words = search_all_words(board)
+    all_words_list = list(all_words)
+    all_words_list.sort(lambda x,y: cmp(len(x), len(y)))
+    print(all_words_list)
+    print("total words found " + str(len(all_words)))
+    return all_words_list
 
-all_words = search_all_words(to2d(board))
-all_words_list = list(all_words)
-all_words_list.sort(lambda x,y: cmp(len(x), len(y)))
-print(all_words_list)
-print("total words found " + str(len(all_words)))
+db = MySQLDatabase('wordwars', user='root',passwd='welcome321', host='mysql-finance.ci7tm9uowicf.us-east-1.rds.amazonaws.com')
+
+class GameBoard(peewee.Model):
+    board = peewee.CharField()
+    possible_count = peewee.IntegerField()
+    all_words = peewee.TextField()
+
+    class Meta:
+        database = db
+
+def generate_board():
+    board = gen()
+    b2d = to2d(board)
+
+    for r in range(MAX_COL):
+        for c in range(MAX_ROW):
+            print b2d[r][c] + ' ',
+        print ''
+
+    board_str = ''.join(board) 
+    try:   
+        board_from_db = GameBoard.get(GameBoard.board == board_str)
+    except GameBoard.DoesNotExist:
+        print("adding " + board_str)
+        combos = generate_all_combos(b2d)
+        possible_count = len(combos)
+        board = GameBoard(board=board_str, possible_count=possible_count, all_words=json.dumps(combos))
+        board.save()
+
+
+count = int(sys.argv[1])
+print("generating " + str(count) + " words")
+
+for n in range(count):
+    generate_board()
+
+
+
