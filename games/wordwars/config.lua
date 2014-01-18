@@ -15,7 +15,7 @@ local config = {
     screenWidth = screenWidth,
     screenHeight = screenHeight,
     viewScale = viewScale,
-    mainScene = "main_scene",
+    mainScene = "menu_scene",
 }
 
 return config

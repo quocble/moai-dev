@@ -11,8 +11,8 @@ local M                         = {}
 -- variables
 M.cache                         = {}
 M.fontPaths                     = {
-    ["VL-PGothic"] = "fonts/VL-PGothic.ttf",
-    ["arial-rounded"] = "fonts/arial-rounded.ttf",
+    ["VL-PGothic"] = "./assets/fonts/VL-PGothic.ttf",
+    ["arial-rounded"] = "./assets/fonts/arial-rounded.ttf",
 }
 
 local function generateUid(fontPath, points, charcodes, dpi)

@@ -155,4 +155,5 @@ def main():
 
 if __name__ == "__main__":
   #websocket.enableTrace(True)
+  #while(1):
   main()

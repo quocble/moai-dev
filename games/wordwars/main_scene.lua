@@ -11,16 +11,16 @@ string = require("hp/lang/string")
    -- check against dictionary
       -- if not good word Glow / shake 
       -- if good word, calculate score (happy dance)
--- facebook integration
+-- facebook integration (next)
    -- send to server
--- python build bot
-   -- build algorithm 
-   -- build client 
+-- python build bot (done)
+   -- build algorithm  (done)
+   -- build client  (done)
 -- python server
-   -- websocket pairing games
+   -- websocket pairing games (done)
    -- client to server (full point for 1st, 2nd 50% )   
 -- select diagonal
--- optimize board generation ( maybe score based on how many words can be found - everyday dictionary )
+-- optimize board generation ( maybe score based on how many words can be found - everyday dictionary ) (done)
 
 
 --------------------------------------------------------------------------------
