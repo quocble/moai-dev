@@ -50,6 +50,7 @@ function onCreate(params)
     -- makeGuiView()
     makeDictionary()
     makeBoard()
+    --makeLocalBoard()
     makeWordBox()
     makePlayerScore()
 
@@ -67,7 +68,7 @@ function onEnterFrame()
     -- if isGameOver() then
     --     return
     -- end
-    
+    updatePointScore()
     -- updatePlayer()
     -- updateFloors()
     -- updateScore()
@@ -327,7 +328,6 @@ function updatePlayerScore()
     end
 end
 
-
 --------------------------------------------------------------------------------
 -- GameOver logic
 --------------------------------------------------------------------------------
@@ -363,10 +363,10 @@ function onMessageReceived( msg )
     print("WebSocket: " .. msg )
     response = MOAIJsonParser.decode ( msg )
     if response["msgtype"] == "new" then
-        PLAYER_ID = response["player_index"]
+        PLAYER_ID = response["your_index"]
         makeRemoteBoard(response["board"])
     elseif response["msgtype"] == "score" then
-        if PLAYER_ID == response[player_index] then
+        if PLAYER_ID == response["player_index"] then
             PLAYER_SCORE = response["score"]
             PlayerScore:setText("SCORE: " .. PLAYER_SCORE)
         end
@@ -387,6 +387,36 @@ end
 function onFailed( msg ) 
     print("WebSocket: " .. msg )
 end
+
+--------------------------------------------------------------------------------
+-- Scoring functions
+--------------------------------------------------------------------------------
+
+function showPointScore(player_index, word, amount)
+    local score_text = TextLabel {
+        text = "+10",
+        size = {GAME_WIDTH, 40},
+        pos = {0,  60},
+        layer = guiView,
+        color = string.hexToRGB( "#000000", true ),
+        align = {"center", "center"}
+    }
+
+    local anim1 = Animation({score_text}, 1)
+        :moveLoc(50, 50, 0)
+        :moveRot(0, 0, 180)
+        :moveScl(1, 1, 0)
+        :wait(3)
+        :sequence(
+            Animation(sprite1, 1):moveScl(-1, -1, 0):moveRot(0, 0, -180):moveLoc(-50, -50, 0),
+            Animation(sprite2, 1):moveScl(-1, -1, 0):moveRot(0, 0, -180):moveLoc(-50, -50, 0))
+        :wait(3)
+        :parallel(
+            Animation(sprite1, 1):setLeft(10):setTop(10),
+            Animation(sprite2, 1):setLeft(10):setTop(sprite1:getHeight() + 10))
+
+end
+
 
 
 
