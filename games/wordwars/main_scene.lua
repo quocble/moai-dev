@@ -21,7 +21,7 @@ string = require("hp/lang/string")
    -- client to server (full point for 1st, 2nd 50% )   
 -- select diagonal
 -- optimize board generation ( maybe score based on how many words can be found - everyday dictionary )
-
+--
 
 --------------------------------------------------------------------------------
 -- Const
@@ -43,6 +43,8 @@ local DICTIONARY = { }
 local PLAYER_WORDS = { }
 local PLAYER_SCORE = 0
 local PLAYER_ID = ""
+local GAME_TIME_SEC = 0
+local PLAYER_LIST = { }
 
 --------------------------------------------------------------------------------
 -- Variables
@@ -58,7 +60,7 @@ CurrentWord = ""
 --------------------------------------------------------------------------------
 
 function onCreate(params)
-    makeWebSocket()
+
     -- makePhysicsWorld()
     
     -- makeGameLayer()
@@ -69,9 +71,15 @@ function onCreate(params)
     -- makeGuiView()
     makeDictionary()
     makeBoard()
+    makeNavigationBar()
+    makeGameTimer()
+    makeWebSocket()
     --makeLocalBoard()
     makeWordBox()
     makePlayerScore()
+    -- makeGameTimer()
+    -- makePlayers(4)
+    -- setGameTimer(97)
 
 end
 
@@ -87,7 +95,6 @@ function onEnterFrame()
     -- if isGameOver() then
     --     return
     -- end
-    updatePointScore()
     -- updatePlayer()
     -- updateFloors()
     -- updateScore()
@@ -190,9 +197,30 @@ function makeBoard()
     guiView = Layer()
     guiView:setScene(scene)
 
-    local floor = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {"#CB44F3", "#8FC7CB", 90})
+    local floor = Mesh.newRect(0, 55, GAME_WIDTH, GAME_HEIGHT-55, {"#CB44F3", "#8FC7CB", 90})
     floor:setLayer(guiView)
 
+end
+
+function makeNavigationBar()
+    navView = Layer()
+    navView:setScene(scene)
+    --left, top, width, height, col
+    local floor = Mesh.newRect(0, 0, GAME_WIDTH, 55, "#555C60")
+    floor:setLayer(navView)
+end
+
+function makeGameTimer()
+    GameTimer = TextLabel {
+        text = "0:00",
+        size = {40, 20},
+        pos = {250,  13},
+        layer = navView,
+        color = string.hexToRGB( "#FFFFFF", true ),
+        align = {"center", "center"}
+        }
+    GameTimer:setTextSize(15)
+    GameTimer:fitSize()
 end
 
 function makeLocalBoard()
@@ -245,18 +273,18 @@ function makeWordBox()
     CurrentWordBox = NinePatch {
         texture = "./assets/word_tile_on.png", 
         layer = guiView,
-        pos = {GAME_WIDTH,  75}, 
+        pos = {GAME_WIDTH,  GAME_HEIGHT - GAME_WIDTH - 40}, 
         align = {"center", "center"}
     }
 
 --    CurrentWordBox:setStretchRows(.25, 5, .25)
 
     CurrentWord = TextLabel {
-        text = "START",
-        size = {GAME_WIDTH, 100},
-        pos = {0,  80},
+        text = "",
+        size = {GAME_WIDTH, 40},
+        pos = {0,  GAME_HEIGHT - GAME_WIDTH - 60},
         layer = guiView,
-        color = string.hexToRGB( "#000000", true ),
+        color = string.hexToRGB( "#0066CC", true ),
         align = {"center", "center"}
     }
 
@@ -265,13 +293,54 @@ end
 
 function makePlayerScore()
     PlayerScore = TextLabel {
-        text = "SCORE",
+        text = "0",
         size = {GAME_WIDTH, 40},
-        pos = {0,  60},
-        layer = guiView,
-        color = string.hexToRGB( "#000000", true ),
+        pos = {0,  15},
+        layer = navView,
+        color = string.hexToRGB( "#CCFF66", true ),
         align = {"center", "center"}
     }
+end
+
+function makePlayers(num_of_players)
+    --PLAYER_LIST
+    local margin = (GAME_WIDTH - (num_of_players * cell_w)) / 2
+    for c=0, num_of_players - 1 do
+        local player_group = Group { 
+                    --pos = {GAME_WIDTH/(num_of_players + 1), 0},
+                    size = {cell_w, cell_h},
+                    align = {"center", "center"},
+                    layer = guiView
+                }
+
+        print("cell_w " .. cell_w .. " cell_height " .. cell_h)
+        local player_image = Sprite {
+                    texture = "./assets/word_tile_default.png", 
+                    size  = { cell_w, cell_h },
+                    parent = player_group,
+                    pos = {0, 0},
+                }
+
+        local player_score = TextLabel {
+                    text = "0",
+                    size = {cell_w, 40},
+                    parent = player_group,
+                    color = string.hexToRGB( "#000000", true ),
+                    pos = {0, cell_h - 8},
+                    align = {"center", "center"}
+                }
+        -- player_group:addChild(player_image)
+        -- player.addChild(player_score)
+        -- player.resizeForChildren()
+
+        player_group.player_image = player_image
+        player_group.player_score = player_score
+
+        print(c * cell_w)
+        player_group:setPos(margin + (c * 80), 65)
+        -- player_group:setPos(c * cell_w, 0)
+        table.insert(PLAYER_LIST, player_group)
+    end
 end
 
 function makeDictionary()
@@ -291,8 +360,23 @@ function updateTouchData(x, y)
     col = math.ceil(x / cell_w) 
     row = math.ceil((y - (GAME_HEIGHT - GAME_WIDTH)) / cell_h)
 
+    ideal_x = (col  - 1) * cell_w
+    ideal_y = ((row - 1) * cell_h) + (GAME_HEIGHT - GAME_WIDTH)
+    margin = 10
+
+    -- x, y , width, height
+    smaller_rect = { x = ideal_x+margin, y = ideal_y + margin, width = cell_w - (2*margin), height = cell_h - (2*margin) }
+    print("x: " .. x .. "y: " .. y)
+    print("xbox " .. smaller_rect['x'] .. " ybox " .. smaller_rect['y'] .. " width " .. smaller_rect['width'] .. " height " .. smaller_rect['height'])
+    local isInSmallerRect = false
+    if x >= smaller_rect['x'] and y >= smaller_rect['y']
+        and x <= smaller_rect['x'] + smaller_rect['width']
+        and y <= smaller_rect['y'] + smaller_rect['height'] then
+        isInSmallerRect = true
+    end
+
     if col >= 1 and col <= BOARD_SIZE["width"] and
-        row >= 1 and row <= BOARD_SIZE["height"] then
+        row >= 1 and row <= BOARD_SIZE["height"] and isInSmallerRect then
 
         local selected_cell = GameBoard[row][col]
         local sprite = selected_cell["sprite"]
@@ -316,8 +400,8 @@ end
 function updateWordBox()
     letter_length = string.len(CurrentWordString)
     print(letter_length)
-    CurrentWordBox:setSize(letter_length*18, 60)
-    CurrentWordBox:setCenterPos(GAME_WIDTH/2, 130)
+    CurrentWordBox:setSize(letter_length*19, 60)
+    CurrentWordBox:setCenterPos(GAME_WIDTH/2, GAME_HEIGHT - GAME_WIDTH - 40)
 end
 
 function clearSelectedLetters()
@@ -346,6 +430,8 @@ function updatePlayerScore()
         ws:write(msg)
     end
 end
+
+
 
 --------------------------------------------------------------------------------
 -- GameOver logic
@@ -384,19 +470,20 @@ function onMessageReceived( msg )
     if response["msgtype"] == "new" then
         PLAYER_ID = response["your_index"]
         makeRemoteBoard(response["board"])
+        makePlayers(response["player_count"])
+        -- setGameTimer(response["game_time"])
     elseif response["msgtype"] == "score" then
         if PLAYER_ID == response["player_index"] then
             PLAYER_SCORE = response["score"]
-            PlayerScore:setText("SCORE: " .. PLAYER_SCORE)
+            PlayerScore:setText("" .. PLAYER_SCORE)
         end
-
+            PLAYER_LIST[response["player_index"]+1].player_score:setText("" .. response["score"])
+            showPointScore(response["player_index"]+1, 10)
     end
 end
 
 function onConnected( msg ) 
     print("WebSocket: " .. msg )
-    --ws:write("Hello")
-    --ws:write("help")
 end
 
 function onClosed( msg ) 
@@ -408,34 +495,44 @@ function onFailed( msg )
 end
 
 --------------------------------------------------------------------------------
--- Scoring functions
+-- Scoring / Time functions
 --------------------------------------------------------------------------------
 
-function showPointScore(player_index, word, amount)
+function showPointScore(player_index, amount)
+
+    local left, top = PLAYER_LIST[player_index]:getPos()
+    print ("left " .. left)
+
     local score_text = TextLabel {
-        text = "+10",
-        size = {GAME_WIDTH, 40},
-        pos = {0,  60},
+        text = "+" .. amount,
+        size = {cell_w, 40},
+        pos = { left, cell_h },
         layer = guiView,
-        color = string.hexToRGB( "#000000", true ),
+        color = string.hexToRGB( "#120255", true ),
         align = {"center", "center"}
     }
 
-    local anim1 = Animation({score_text}, 1)
-        :moveLoc(50, 50, 0)
-        :moveRot(0, 0, 180)
-        :moveScl(1, 1, 0)
-        :wait(3)
-        :sequence(
-            Animation(sprite1, 1):moveScl(-1, -1, 0):moveRot(0, 0, -180):moveLoc(-50, -50, 0),
-            Animation(sprite2, 1):moveScl(-1, -1, 0):moveRot(0, 0, -180):moveLoc(-50, -50, 0))
-        :wait(3)
-        :parallel(
-            Animation(sprite1, 1):setLeft(10):setTop(10),
-            Animation(sprite2, 1):setLeft(10):setTop(sprite1:getHeight() + 10))
+    local anim1 = Animation({score_text}, 5)
+        :moveLoc(0, -150, 0, 1, MOAIEaseType.EASE_OUT)
+    anim1:play()
+    -- anim1:setListener ( MOAIAction.EVENT_STOP, function ()
+    --     local x, y = score_text:getLoc()
+    --     if y > GAME_HEIGHT/2 then
+    --         guiView:removeProp(score_text)
+    --         score_text = nil
+    --     end
+    -- end )
 
 end
 
+-- function setGameTimer(time_in_sec)
+--     GAME_TIME_SEC = time_in_sec
+--     local min = GAME_TIME_SEC / 60
+--     local sec = GAME_TIME_SEC % 60
+--     if sec < 10 then sec = "0" .. sec
+--     GameTimer:setText(min .. ":" .. sec)
+--     end
+-- end
 
 
 
