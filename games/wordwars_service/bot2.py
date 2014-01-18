@@ -124,6 +124,7 @@ class Bot(object):
 
   def on_open(self, ws):
     print "open"
+    self.ws.send(json.dumps({'msgtype' : 'queue', 'userid' : word }))
 
 def main():
   count = 1

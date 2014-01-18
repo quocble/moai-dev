@@ -132,20 +132,25 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         ChatSocketHandler.waiters.add(self)
-        ChatSocketHandler.queue_players.append(self)
-        print("add queue player " + hex(id(self)) + " total=" + str(len(ChatSocketHandler.queue_players)) + " players")
 
-        players = []
-        if len(ChatSocketHandler.queue_players) >= ChatSocketHandler.player_per_game :
-            for n in range(ChatSocketHandler.player_per_game):
-                players.append(ChatSocketHandler.queue_players.popleft())
-            
-            new_game = Game(players)    
-            ChatSocketHandler.games.append(new_game)
-            new_game.notify_new_game()
-            for player in players:
-                player.score = 0
-                player.current_game = new_game
+    def queue(self):
+        if self in ChatSocketHandler.queue_players:
+            print("cannot enqueue player " + hex(id(self)))
+        else: 
+            ChatSocketHandler.queue_players.append(self)
+            print("add queue player " + hex(id(self)) + " total=" + str(len(ChatSocketHandler.queue_players)) + " players")
+
+            players = []
+            if len(ChatSocketHandler.queue_players) >= ChatSocketHandler.player_per_game :
+                for n in range(ChatSocketHandler.player_per_game):
+                    players.append(ChatSocketHandler.queue_players.popleft())
+                
+                new_game = Game(players)    
+                ChatSocketHandler.games.append(new_game)
+                new_game.notify_new_game()
+                for player in players:
+                    player.score = 0
+                    player.current_game = new_game
 
     def on_close(self):
         try:
@@ -162,6 +167,8 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
         if parsed["msgtype"] == "play":
             print("score")
             self.current_game.play_word(self, parsed["word"])
+        elif parsed["msgtype"] == "queue":
+            self.queue()
 
         # chat = {
         #     "id": str(uuid.uuid4()),
