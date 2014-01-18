@@ -20,6 +20,7 @@ string = require("hp/lang/string")
    -- websocket pairing games
    -- client to server (full point for 1st, 2nd 50% )   
 -- select diagonal
+-- optimize board generation ( maybe score based on how many words can be found - everyday dictionary )
 
 
 --------------------------------------------------------------------------------
@@ -381,10 +382,10 @@ function onMessageReceived( msg )
     print("WebSocket: " .. msg )
     response = MOAIJsonParser.decode ( msg )
     if response["msgtype"] == "new" then
-        PLAYER_ID = response["player_index"]
+        PLAYER_ID = response["your_index"]
         makeRemoteBoard(response["board"])
     elseif response["msgtype"] == "score" then
-        if PLAYER_ID == response[player_index] then
+        if PLAYER_ID == response["player_index"] then
             PLAYER_SCORE = response["score"]
             PlayerScore:setText("SCORE: " .. PLAYER_SCORE)
         end

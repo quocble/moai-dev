@@ -100,7 +100,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
     queue_players = deque() # queue of players looking for game.
     games   = []
     cache = []
-    player_per_game = 1
+    player_per_game = 2
 
     def allow_draft76(self):
         # for iOS 5.0 Safari
