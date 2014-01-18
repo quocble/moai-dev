@@ -12,7 +12,7 @@ local M                 = {}
 
 M.Button = {
     normal = {
-        skin = "skins/button-normal.png",
+        skin = "./assets/skins/button-normal.png",
         skinClass = NinePatch,
         skinColor = {1, 1, 1, 1},
         font = "VL-PGothic",
@@ -21,21 +21,21 @@ M.Button = {
         textPadding = {10, 5, 10, 8},
     },
     selected = {
-        skin = "skins/button-selected.png",
+        skin = "./assets/skins/button-selected.png",
     },
     over = {
-        skin = "skins/button-over.png",
+        skin = "./assets/skins/button-over.png",
     },
     disabled = {
-        skin = "skins/button-disabled.png",
+        skin = "./assets/skins/button-disabled.png",
         textColor = {0.5, 0.5, 0.5, 1},
     },
 }
 
 M.Joystick = {
     normal = {
-        baseSkin = "skins/joystick_base.png",
-        knobSkin = "skins/joystick_knob.png",
+        baseSkin = "./assets/skins/joystick_base.png",
+        knobSkin = "./assets/skins/joystick_knob.png",
         baseColor = {1, 1, 1, 1},
         knobColor = {1, 1, 1, 1},
     },
@@ -47,7 +47,7 @@ M.Joystick = {
 
 M.Panel = {
     normal = {
-        backgroundSkin = "skins/panel.png",
+        backgroundSkin = "./assets/skins/panel.png",
         backgroundSkinClass = NinePatch,
         backgroundColor = {1, 1, 1, 1},
     },
@@ -58,7 +58,7 @@ M.Panel = {
 
 M.MessageBox = {
     normal = {
-        backgroundSkin = "skins/panel.png",
+        backgroundSkin = "./assets/skins/panel.png",
         backgroundSkinClass = NinePatch,
         backgroundColor = {1, 1, 1, 1},
         font = "VL-PGothic",
@@ -74,9 +74,9 @@ M.MessageBox = {
 
 M.Slider = {
     normal = {
-        bg = "skins/slider_background.png",
-        thumb = "skins/slider_thumb.png",
-        progress = "skins/slider_progress.png",
+        bg = "./assets/skins/slider_background.png",
+        thumb = "./assets/skins/slider_thumb.png",
+        progress = "./assets/skins/slider_progress.png",
         color = {1, 1, 1, 1},
     },
     disabled = {
@@ -86,7 +86,7 @@ M.Slider = {
 
 M.DialogBox = {
     normal = {
-        backgroundSkin = "skins/dialog.png",
+        backgroundSkin = "./assets/skins/dialog.png",
         backgroundSkinClass = NinePatch,
         backgroundColor = {1, 1, 1, 1},
         font = "VL-PGothic",
@@ -99,10 +99,10 @@ M.DialogBox = {
         titleColor = {1, 1, 0, 1},
         iconPadding = {5, 5, 0, 5},
         iconScaleFactor = 0.5,
-        iconInfo = "skins/info.png",
-        iconConfirm = "skins/okay.png",
-        iconWarning = "skins/warning.png",
-        iconError = "skins/error.png",
+        iconInfo = "./assets/skins/info.png",
+        iconConfirm = "./assets/skins/okay.png",
+        iconWarning = "./assets/skins/warning.png",
+        iconError = "./assets/skins/error.png",
         buttonsPadding = {5, 0, 5, 5},
     },
     disabled = {

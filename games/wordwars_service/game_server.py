@@ -27,12 +27,17 @@ import tornado.websocket
 import os.path
 import uuid
 import random
+import peewee
+from peewee import *
+import json 
+import sys
 
 from collections import deque
 from tornado.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 
+PLAYER_COUNT = 1
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -58,6 +63,16 @@ WORD_BAG = { 'A' : 9 , 'B' : 2, 'C' : 2, 'D' : 4, 'E' : 12, 'F' : 2, 'G' : 3,
                     'O' : 8, 'P' : 2, 'Q' : 1, 'R' : 6, 'S' : 4, 'T' : 6, 'U' : 4,
                     'V' : 2, 'W' : 2, 'X' : 1, 'Y' : 2, 'Z' : 1 }
 
+db = MySQLDatabase('wordwars', user='root',passwd='welcome321', host='mysql-finance.ci7tm9uowicf.us-east-1.rds.amazonaws.com')
+
+class GameBoard(peewee.Model):
+    board = peewee.CharField()
+    possible_count = peewee.IntegerField()
+    all_words = peewee.TextField()
+
+    class Meta:
+        database = db
+
 class Game(object): 
     def __init__(self, players):
         self.players = players
@@ -66,21 +81,30 @@ class Game(object):
         print ("making new game with board")
         print (self.board)
 
+    # @classmethod
+    # def makeBoard(self):
+    #     bag = []
+    #     for key, value in WORD_BAG.iteritems():
+    #         for n in range(value) :
+    #             bag.append(key)
+    #     random.shuffle(bag)                
+    #     board = bag[:16]
+    #     return board
+
     @classmethod
     def makeBoard(self):
-        bag = []
-        for key, value in WORD_BAG.iteritems():
-            for n in range(value) :
-                bag.append(key)
-        random.shuffle(bag)                
-        board = bag[:16]
-        return board
+        try:   
+            boards = GameBoard.select().order_by(fn.Rand()).limit(1)
+            return boards[0]
+        except GameBoard.DoesNotExist:
+            print("no board")
 
     def notify_new_game(self):
         print("notify new game")
         for player in self.players:
             index = self.players.index(player) 
-            msg = { 'msgtype' : 'new', 'board' : self.board, 'your_index' : index }
+            board_arr = list(self.board.board)
+            msg = { 'msgtype' : 'new', 'board' : board_arr, 'your_index' : index , 'player_count' : len(self.players) }
             player.write_message(tornado.escape.json_encode(msg))
 
     def play_word(self, player , word):
@@ -90,7 +114,7 @@ class Game(object):
             point = 10
 
         player.score += point
-        msg = { 'msgtype' : 'score' , 'score' : player.score, 'player_index' : self.players.index(player) }
+        msg = { 'msgtype' : 'score' , 'score' : player.score, 'player_index' : self.players.index(player) , 'word' : word, 'point' : point }
 
         for p in self.players:
             p.write_message(tornado.escape.json_encode(msg))
@@ -100,7 +124,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
     queue_players = deque() # queue of players looking for game.
     games   = []
     cache = []
-    player_per_game = 2
+    player_per_game = PLAYER_COUNT
 
     def allow_draft76(self):
         # for iOS 5.0 Safari
@@ -124,9 +148,12 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
                 player.current_game = new_game
 
     def on_close(self):
-        ChatSocketHandler.waiters.remove(self)
-        ChatSocketHandler.queue_players.remove(self)
-        print("remove player " + hex(id(self)))
+        try:
+            ChatSocketHandler.waiters.remove(self)
+            ChatSocketHandler.queue_players.remove(self)
+            print("remove player " + hex(id(self)))
+        except ValueError:
+            print("exception close")
 
     def on_message(self, message):
         logging.info("got message %r", message)
