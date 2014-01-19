@@ -25,6 +25,10 @@ string = require("hp/lang/string")
 -- End game scene
 -- Test on phone
 -- Timer game-logic  / end game
+-- clean up diagonal w/ 2 rectangles
+-- mask player images into circle
+-- finish game timer
+
 
 --------------------------------------------------------------------------------
 -- Const
@@ -48,6 +52,8 @@ local PLAYER_SCORE = 0
 local PLAYER_ID = ""
 local GAME_TIME_SEC = 0
 local PLAYER_LIST = { }
+
+local LAST_TIMESTAMP = 0
 
 --------------------------------------------------------------------------------
 -- Variables
@@ -102,6 +108,8 @@ function onEnterFrame()
     -- updateFloors()
     -- updateScore()
     -- updateLevel()
+--    print(MOAISim.getStep())
+    updateGameTimer()
 end
 
 function onTouchDown(e)
@@ -434,6 +442,22 @@ function updatePlayerScore()
     end
 end
 
+function updateGameTimer()
+    local step = MOAISim.getDeviceTime() - LAST_TIMESTAMP
+    if GAME_TIME_SEC >= 0 then
+        local min = math.floor(GAME_TIME_SEC / 60)
+        local sec = math.floor(GAME_TIME_SEC % 60)
+        if (math.floor(GAME_TIME_SEC) - math.floor(GAME_TIME_SEC - step)) >= 1 then
+            if sec < 10 then 
+                sec = "0" .. sec
+            end
+            GameTimer:setText(min .. ":" .. sec)
+        end
+
+        GAME_TIME_SEC = GAME_TIME_SEC - step
+    end
+    LAST_TIMESTAMP = MOAISim.getDeviceTime()
+end
 
 
 --------------------------------------------------------------------------------
@@ -444,8 +468,9 @@ function isGameOver()
 
 end
 
-function gameOver()
-
+function gameOver(score_results)
+    print("GAME OVER")
+    SceneManager:openScene("score_scene", { results = score_results })
 end
 
 --------------------------------------------------------------------------------
@@ -463,7 +488,8 @@ function makeWebSocket()
     ws:setListener ( MOAIWebSocket.ON_CLOSE, onClosed )
     ws:setListener ( MOAIWebSocket.ON_FAIL, onFailed )
 
-    ws:start("ws://192.168.1.115:8888/ws")
+    -- ws:start("ws://192.168.1.115:8888/ws")
+    ws:start("ws://10.0.0.10:8888/ws")
 
 end
 
@@ -474,7 +500,7 @@ function onMessageReceived( msg )
         PLAYER_ID = response["your_index"]
         makeRemoteBoard(response["board"])
         makePlayers(response["player_count"])
-        -- setGameTimer(response["game_time"])
+        setGameTimer(response["game_time"])
     elseif response["msgtype"] == "score" then
         if PLAYER_ID == response["player_index"] then
             PLAYER_SCORE = response["score"]
@@ -482,11 +508,16 @@ function onMessageReceived( msg )
         end
             PLAYER_LIST[response["player_index"]+1].player_score:setText("" .. response["score"])
             showPointScore(response["player_index"]+1, 10)
+    elseif response["msgtype"] == "game_over" then
+        gameOver(response["score"]) 
     end
 end
 
 function onConnected( msg ) 
     print("WebSocket: " .. msg )
+    local queue_msg = { msgtype = "queue" }
+    write_msg = MOAIJsonParser.encode(queue_msg)
+    ws:write(write_msg)
 end
 
 function onClosed( msg ) 
@@ -528,14 +559,9 @@ function showPointScore(player_index, amount)
 
 end
 
--- function setGameTimer(time_in_sec)
---     GAME_TIME_SEC = time_in_sec
---     local min = GAME_TIME_SEC / 60
---     local sec = GAME_TIME_SEC % 60
---     if sec < 10 then sec = "0" .. sec
---     GameTimer:setText(min .. ":" .. sec)
---     end
--- end
+function setGameTimer(time_in_sec)
+    GAME_TIME_SEC = 0 + time_in_sec
+end
 
 
 
