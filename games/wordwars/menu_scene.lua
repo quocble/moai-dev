@@ -3,8 +3,6 @@ module(..., package.seeall)
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
 
-websocket = "WWWWWW"
-
 function onStartClick()
     SceneManager:openScene("wait_queue_scene", { websocket = "X"})
 end

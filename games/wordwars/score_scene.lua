@@ -5,16 +5,14 @@ string = require("hp/lang/string")
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
 
-    -- { names = player_names, scores = player_scores, most_words = player_name_most_words, 
-    -- longest_streak = player_name_longest_streak, longest_word = player_name_longest_word }
-    -- ex
+    -- param ex
         -- { 
         -- players = [ 
         --     { name = "Jon", score = "5000" }
         --     { name = "Bob", score = "4000" }
         --	   { name = "Jan", score = "3000" }
-        -- most_words = "Jon", 
-        -- longest_streak = "Jan", 
+        -- most_words = { name = "Jon", count = 50 },
+        -- longest_streak = { name = "Jan", count = 10 }, 
         -- longest_word = { name = "Bob", word = "Longest_Word" } 
         -- }
 local PLAYER_LIST = { }
@@ -158,14 +156,18 @@ function makeButtons()
 end
 
 function makeRankingPedestal(params)
+
 end
 
 function onReplayClick()
-    SceneManager:openScene("wait_queue_scene")
+    SceneManager:closeScene()
+    SceneManager:closeScene()
 end
 
 function onMenuClick()
-    SceneManager:openScene("menu_scene")
+    SceneManager:closeScene()
+    SceneManager:closeScene()
+    SceneManager:closeScene()
 end
 
 function onStart()

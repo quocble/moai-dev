@@ -59,6 +59,64 @@ local A_BUTTON_STYLES = {
 
 math.randomseed(os.time())
 
+
+--------------------------------------------------------------------------------
+-- Network functions
+--------------------------------------------------------------------------------
+
+
+function setupGame(response)
+    PLAYER_ID = response["your_index"]
+    makeRemoteBoard(response["board"])
+    makePlayers(#response["players"])
+    setGameTimer(response["game_time"])
+    PLAYER_NAMES = response["players"]
+end
+
+function makeWebSocket()
+    ws = MOAIWebSocket.new()
+    ws:setListener ( MOAIWebSocket.ON_MESSAGE, onMessageReceived )
+    ws:setListener ( MOAIWebSocket.ON_CONNECT, onConnected )
+    ws:setListener ( MOAIWebSocket.ON_CLOSE, onClosed )
+    ws:setListener ( MOAIWebSocket.ON_FAIL, onFailed )
+
+    -- ws:start("ws://192.168.1.115:8888/ws")
+    ws:start("ws://10.0.0.10:8888/ws")
+
+end
+
+local WS_LISTENER = {}
+
+function WS_LISTENER.onMessageReceived( msg ) 
+    print("WebSocket: " .. msg )
+    response = MOAIJsonParser.decode ( msg )
+    if response["msgtype"] == "score" then
+        if PLAYER_ID == response["player_index"] then
+            PLAYER_SCORE = response["score"]
+            PlayerScore:setText("" .. PLAYER_SCORE)
+        end
+            PLAYER_LIST[response["player_index"]+1].player_score:setText("" .. response["score"])
+            showPointScore(response["player_index"]+1, response["point"])
+    elseif response["msgtype"] == "game_over" then
+        gameOver(response) 
+    end
+end
+
+function WS_LISTENER.onConnected( msg ) 
+    print("WebSocket: " .. msg )
+    local queue_msg = { msgtype = "queue" }
+    local write_msg = MOAIJsonParser.encode(queue_msg)
+    GameService:write(write_msg)
+end
+
+function WS_LISTENER.onClosed( msg ) 
+    print("WebSocket: " .. msg )
+end
+
+function WS_LISTENER.onFailed( msg ) 
+    print("WebSocket: " .. msg )
+end
+
 function onCreate(params)
 
     GameService:addListener(WS_LISTENER)
@@ -78,7 +136,6 @@ function onCreate(params)
     -- makeGameTimer()
     -- makePlayers(4)
     -- setGameTimer(97)
-
 end
 
 function onDestroy()
@@ -126,7 +183,8 @@ function onTouchUp(e)
 end
 
 function onBackClick()
-    SceneManager:openScene("menu_scene")
+    SceneManager:closeScene()
+    SceneManager:closeScene()
 end
 
 function resetScale(skip_sprite, change_color)
@@ -459,7 +517,10 @@ function updatePlayerScore()
 end
 
 function updateGameTimer()
-    local step = MOAISim.getDeviceTime() - LAST_TIMESTAMP
+    local step = 0
+    if LAST_TIMESTAMP ~= 0 then
+        step = MOAISim.getDeviceTime() - LAST_TIMESTAMP
+    end
     if GAME_TIME_SEC >= 0 then
         local min = math.floor(GAME_TIME_SEC / 60)
         local sec = math.floor(GAME_TIME_SEC % 60)
@@ -491,19 +552,8 @@ function gameOver(game_over_results)
     print("game_over_results: ")
     print(game_over_results)
     --SceneManager:openScene(game_over_results)
-    local test_results = {
-        msgtype = "game_over",  
-        players = { 
-            { name = "Jon", score = "5000" },
-            { name = "Bob", score = "4000" },
-            { name = "Jan", score = "3000" },
-        },
-        most_words = "Jon", 
-        longest_streak = "Jan", 
-        longest_word = "Bob"
-        }
-    SceneManager:openScene(test_results)
-    --SceneManager:openScene("score_scene", { names = PLAYER_NAMES, results = game_over_results })
+    --SceneManager:openScene(test_results)
+    SceneManager:openScene("score_scene", game_over_results)
 
 end
 
@@ -511,69 +561,12 @@ end
 -- Common logic
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
--- Network functions
---------------------------------------------------------------------------------
-
-
-function setupGame(response)
-    PLAYER_ID = response["your_index"]
-    makeRemoteBoard(response["board"])
-    makePlayers(#response["players"])
-    setGameTimer(response["game_time"])
-    PLAYER_NAMES = response["players"]
-end
-
-function makeWebSocket()
-    ws = MOAIWebSocket.new()
-    ws:setListener ( MOAIWebSocket.ON_MESSAGE, onMessageReceived )
-    ws:setListener ( MOAIWebSocket.ON_CONNECT, onConnected )
-    ws:setListener ( MOAIWebSocket.ON_CLOSE, onClosed )
-    ws:setListener ( MOAIWebSocket.ON_FAIL, onFailed )
-
-    -- ws:start("ws://192.168.1.115:8888/ws")
-    ws:start("ws://10.0.0.10:8888/ws")
-
-end
-
-local WS_LISTENER = {}
-
-function WS_LISTENER.onMessageReceived( msg ) 
-    print("WebSocket: " .. msg )
-    response = MOAIJsonParser.decode ( msg )
-    if response["msgtype"] == "score" then
-        if PLAYER_ID == response["player_index"] then
-            PLAYER_SCORE = response["score"]
-            PlayerScore:setText("" .. PLAYER_SCORE)
-        end
-            PLAYER_LIST[response["player_index"]+1].player_score:setText("" .. response["score"])
-            showPointScore(response["player_index"]+1, 10)
-    elseif response["msgtype"] == "game_over" then
-        gameOver(response) 
-    end
-end
-
-function WS_LISTENER.onConnected( msg ) 
-    print("WebSocket: " .. msg )
-    local queue_msg = { msgtype = "queue" }
-    local write_msg = MOAIJsonParser.encode(queue_msg)
-    GameService:write(write_msg)
-end
-
-function WS_LISTENER.onClosed( msg ) 
-    print("WebSocket: " .. msg )
-end
-
-function WS_LISTENER.onFailed( msg ) 
-    print("WebSocket: " .. msg )
-end
 
 --------------------------------------------------------------------------------
 -- Scoring / Time functions
 --------------------------------------------------------------------------------
 
 function showPointScore(player_index, amount)
-
     local left, top = PLAYER_LIST[player_index]:getPos()
 
     local score_text = TextLabel {
@@ -602,7 +595,8 @@ function removeScoreText(score_text)
 end 
 
 function setGameTimer(time_in_sec)
-    GAME_TIME_SEC = 0 + time_in_sec
+    print(time_in_sec)
+    GAME_TIME_SEC = time_in_sec
 end
 
 
