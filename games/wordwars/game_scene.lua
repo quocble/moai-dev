@@ -20,6 +20,9 @@ string = require("hp/lang/string")
    -- client to server (full point for 1st, 2nd 50% )   (done)
 -- select diagonal (done)
 -- optimize board generation ( maybe score based on how many words can be found - everyday dictionary ) (done) 
+-- consecutive streak (done)
+-- max word length (done)
+-- finish game timer (done)
 -- prevent cheating through dead area / lower priority
 -- Waiting scene - coutdown going down.
 -- End game scene
@@ -27,11 +30,14 @@ string = require("hp/lang/string")
 -- Timer game-logic  / end game
 -- clean up diagonal w/ 2 rectangles
 -- mask player images into circle
--- finish game timer (done)
+
+-- image from URL
 -- back button > main menu
--- consecutive streak (done)
--- max word length (done)
+
 -- integrate powerups
+    -- blackout
+    -- wildcard
+
 
 
 
@@ -489,9 +495,27 @@ function isGameOver()
 
 end
 
-function gameOver(score_results)
+function gameOver(game_over_results)
     print("GAME OVER")
-    SceneManager:openScene("score_scene", { results = score_results, names = PLAYER_NAMES })
+    print("PLAYER_NAMES: ")
+    print(PLAYER_NAMES)
+    print("game_over_results: ")
+    print(game_over_results)
+    --SceneManager:openScene(game_over_results)
+    local test_results = {
+        msgtype = "game_over",  
+        players = { 
+            { name = "Jon", score = "5000" },
+            { name = "Bob", score = "4000" },
+            { name = "Jan", score = "3000" },
+        },
+        most_words = "Jon", 
+        longest_streak = "Jan", 
+        longest_word = "Bob"
+        }
+    SceneManager:openScene(test_results)
+    --SceneManager:openScene("score_scene", { names = PLAYER_NAMES, results = game_over_results })
+
 end
 
 --------------------------------------------------------------------------------
@@ -522,7 +546,7 @@ function onMessageReceived( msg )
         makeRemoteBoard(response["board"])
         makePlayers(#response["players"])
         setGameTimer(response["game_time"])
-        PLAYER_NAMES = response["player_names"]
+        PLAYER_NAMES = response["players"]
     elseif response["msgtype"] == "score" then
         if PLAYER_ID == response["player_index"] then
             PLAYER_SCORE = response["score"]
@@ -531,7 +555,7 @@ function onMessageReceived( msg )
             PLAYER_LIST[response["player_index"]+1].player_score:setText("" .. response["score"])
             showPointScore(response["player_index"]+1, 10)
     elseif response["msgtype"] == "game_over" then
-        gameOver(response["score"]) 
+        gameOver(response) 
     end
 end
 
