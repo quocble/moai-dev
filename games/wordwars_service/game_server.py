@@ -40,6 +40,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 PLAYER_COUNT = 2
 GAME_TIME = 30
+LOADING_DELAY = 6
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -80,7 +81,7 @@ class Game(object):
         self.players = players
         self.board = Game.makeBoard()
         self.words_play = []
-        self.game_timer = threading.Timer(GAME_TIME, self.game_over)
+        self.game_timer = threading.Timer(GAME_TIME + LOADING_DELAY + 2, self.game_over)
         self.game_timer.start()
         print ("making new game with board")
         print (self.board)
@@ -160,9 +161,6 @@ class Game(object):
             scores.append({'name' : hex(id(self)), 'score' : player.score })
         msg = { 'msgtype' : 'game_over', 'players' : scores, 'most_words' : most_words, 
                 'longest_streak' : highest_streak, 'longest_word' : highest_word_length }
-        #for player in self.players:
-        #    scores.append({'score' : player.score })
-        #msg = { 'msgtype' : 'game_over', 'score' : scores }
         for player in self.players:
             player.write_message(tornado.escape.json_encode(msg))
 
@@ -208,7 +206,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
                 
                 new_game = Game(players)    
                 ChatSocketHandler.games.append(new_game)
-                new_game.notify_new_game_after(6)
+                new_game.notify_new_game_after(LOADING_DELAY)
                 for player in players:
                     player.score = 0
                     player.max_word = ""
