@@ -1,60 +1,142 @@
 module(..., package.seeall)
 
+string = require("hp/lang/string")
+
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
+local LISTENER = {}
+local playerViews = {}
+local allPlayers = {}
+local A_BUTTON_STYLES = {
+    normal = {
+        skin = "./assets/btn_down.png",
+        skinColor = {1, 1, 1, 1.0},
+        textSize = 12
+    },
+    selected = {
+        skin = "./assets/btn_down.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    over = {
+        skin = "./assets/btn_down.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    disabled = {
+        skin = "./assets/btn_down.png",
+    },
+}
 
+-----------------------------------------------------------------------------------
 
-function onStartClick()
-    SceneManager:openScene("main_scene")
+function LISTENER.onConnected(msg)
+    print("connected to me")
+    GameService:queueGame()    
 end
+
+function LISTENER.onMessageReceived(msg)
+    response = MOAIJsonParser.decode ( msg )
+    if response["msgtype"] == 'player_join' then
+        updatePlayers(response["player"])
+    end
+end
+
+function LISTENER.onClosed(msg)
+end
+
+function LISTENER.onFailed(msg)
+end
+
+-----------------------------------------------------------------------------------
 
 function onCreate(params)
     layer = Layer {scene = scene}
     local floor = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {"#CB44F3", "#8FC7CB", 90})
     floor:setLayer(layer)
+    print ("obj ", self)
 
-    local w, h = 526/2, 146/2
+    makeNavigationBar()
+    makePlaceholders()
 
-    sprite1 = Sprite {
-        texture = "./assets/game_title.png", 
-        layer = layer,
-        size = { w , h } ,
-        pos = { (GAME_WIDTH - w) / 2 , 80 }
-    }    
+    GameService:start()
+    GameService:addListener(LISTENER)
+end
 
-    -- anim2 = Animation():loop(0, 
-    --     Animation({sprite1}, 0.80, MOAIEaseType.SMOOTH):moveLoc(10, 0, 0):moveLoc(-10, 0, 0))
-    -- anim2:play()
-
-    view = View {
+function makeNavigationBar()
+    guiView = View {
         scene = scene,
-        pos = {0, 50},
-        layout = {
-            VBoxLayout {
-                align = {"center", "center"},
-                padding = {10, 10, 10, 30},
-            }
-        },
-        children = {{
-            Button {
-                name = "startButton",
-                text = "Play",
-                onClick = onStartClick,
-                size = { 175, 55}
-            },
-            Button {
-                name = "backButton",
-                text = "Invite",
-                onClick = onBackClick,
-                size = { 175, 55}
-            },
-            Button {
-                name = "testButton1",
-                text = "Help",
-                size = { 175, 55}
-            },
-        }},
+        size = { GAME_WIDTH, 60}
     }
+
+    local floor = Mesh.newRect(0, 0, GAME_WIDTH, 60, "#555C60")
+    floor:setLayer(layer)
+
+    backButton = Button {
+        text = "Back",
+        size = {60, 35},
+        pos = { 10, 18 },
+        parent = guiView,
+        onClick = onInfoClick,
+        styles = { A_BUTTON_STYLES }
+    }    
+    titleLabel = TextLabel {
+        text = "Finding Players",
+        size = {GAME_WIDTH, 40},
+        pos = { 0, 15 },
+        layer = layer,
+        color = string.hexToRGB( "#f7f7f7", true ),
+        align = {"center", "center"},
+        textSize = 18
+    }
+
+end
+
+function makePlaceholders()
+
+    local cell_w, cell_h = GAME_WIDTH / 2 , GAME_WIDTH /2 
+
+    for n=0, 3 do
+        c = n % 2
+        r = math.floor(n / 2)        
+        local player_group = Group { 
+            pos = { c * cell_w , 100 + (r * cell_h) },
+            size = {cell_w, cell_h},
+            align = {"center", "center"},
+            layer = layer
+        }
+
+        local player_image = Sprite {
+            texture = "./assets/word_tile_default.png", 
+            size  = { cell_w, cell_h },
+            parent = player_group,
+            pos = {0, 0},
+        }
+
+        local player_name = TextLabel {
+            text = "?",
+            size = {cell_w, 40},
+            parent = player_group,
+            color = string.hexToRGB( "#000000", true ),
+            pos = {0, cell_h - 8},
+            textSize = 10,
+            align = {"center", "center"}
+        }
+
+        player_group.image = player_image
+        player_group.name = player_name
+        player_group:setVisible(false)
+
+        table.insert(playerViews, player_group)
+    end
+end
+
+function updatePlayers(players)
+    print("updating players " .. #players)    
+    count = #allPlayers
+    for i, player in ipairs(players) do
+        playerViews[count+i]:setVisible(true)
+        playerViews[count+i].name:setText(player.player_name)
+        table.insert(allPlayers, player)
+    end
 
 end
 
@@ -76,6 +158,7 @@ end
 
 function onDestroy()
     print("onDestroy()")
+    GameService:removeListener(self)    
 end
 
 function onTouchDown(event)
@@ -89,3 +172,4 @@ end
 function onTouchMove(event)
     print("onTouchMove(event)")
 end
+

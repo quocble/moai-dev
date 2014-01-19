@@ -15,7 +15,7 @@ local config = {
     screenWidth = screenWidth,
     screenHeight = screenHeight,
     viewScale = viewScale,
-    mainScene = "menu_scene",
+    mainScene = "wait_queue_scene",
 }
 
 return config

@@ -135,6 +135,7 @@ class Bot(object):
     print "### closed ###"
 
   def add_to_queue(self):
+    print("add to queue")
     self.ws.send(json.dumps({'msgtype' : 'queue', 'userid' : '' }))
 
   def on_open(self, ws):

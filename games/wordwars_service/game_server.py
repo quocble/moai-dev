@@ -102,13 +102,20 @@ class Game(object):
             return boards[0]
         except GameBoard.DoesNotExist:
             print("no board")
+ 
+    def notify_new_game_after(self, time):
+        threading.Timer(time, self.notify_new_game).start()
 
     def notify_new_game(self):
         print("notify new game")
+        player_obj = []
+        for player in self.players:
+            player_obj.append({'player_name' : 'Name X' })
+
         for player in self.players:
             index = self.players.index(player) 
             board_arr = list(self.board.board)
-            msg = { 'msgtype' : 'new', 'board' : board_arr, 'your_index' : index , 'player_count' : len(self.players) , 'game_time' : GAME_TIME }
+            msg = { 'msgtype' : 'new', 'board' : board_arr, 'your_index' : index , 'players' : player_obj , 'game_time' : GAME_TIME }
             player.write_message(tornado.escape.json_encode(msg))
 
     def play_word(self, player , word):
@@ -147,6 +154,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         ChatSocketHandler.waiters.add(self)
+        self.profile_img = 'https://s3.amazonaws.com/uifaces/faces/twitter/igorgarybaldi/128.jpg'
 
     def queue(self):
         if self in ChatSocketHandler.queue_players:
@@ -155,6 +163,19 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
             ChatSocketHandler.queue_players.append(self)
             print("add queue player " + hex(id(self)) + " total=" + str(len(ChatSocketHandler.queue_players)) + " players")
 
+            # notify the other players as people are joining
+            all_players_in_next_game = []
+            for player in ChatSocketHandler.queue_players:
+                all_players_in_next_game.append({'player_name' : 'Player ' + hex(id(player)), 'profile_img' : player.profile_img })
+
+            msg = { 'msgtype' : 'player_join' , 'player' : all_players_in_next_game }
+            self.write_message(msg)
+
+            for player in ChatSocketHandler.queue_players:
+                if(player != self):
+                    msg = { 'msgtype' : 'player_join' , 'player' : [{'player_name' : 'Player ' + hex(id(self)), 'profile_img' : self.profile_img }] }
+                    player.write_message(msg)
+
             players = []
             if len(ChatSocketHandler.queue_players) >= PLAYER_COUNT:
                 for n in range(PLAYER_COUNT):
@@ -162,10 +183,11 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
                 
                 new_game = Game(players)    
                 ChatSocketHandler.games.append(new_game)
-                new_game.notify_new_game()
+                new_game.notify_new_game_after(6)
                 for player in players:
                     player.score = 0
                     player.current_game = new_game
+
 
     def on_close(self):
         try:

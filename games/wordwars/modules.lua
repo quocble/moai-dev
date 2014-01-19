@@ -39,5 +39,6 @@ TMXMapView              = require "hp/tmx/TMXMapView"
 TMXObject               = require "hp/tmx/TMXObject"
 TMXObjectGroup          = require "hp/tmx/TMXObjectGroup"
 TMXTileset              = require "hp/tmx/TMXTileset"
+GameService				= require "game_service"
 
 return _G -- Dummy module
