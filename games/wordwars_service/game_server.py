@@ -154,7 +154,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         ChatSocketHandler.waiters.add(self)
-        self.profile_img = 'https://s3.amazonaws.com/uifaces/faces/twitter/igorgarybaldi/128.jpg'
+        self.profile_img = 'https://s3.amazonaws.com/uifaces/faces/twitter/BillSKenney/128.jpg'
 
     def queue(self):
         if self in ChatSocketHandler.queue_players:
@@ -188,7 +188,13 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
                     player.score = 0
                     player.current_game = new_game
 
-
+    def leave(self):
+        try:
+            ChatSocketHandler.queue_players.remove(self)
+            print("leave player " + hex(id(self)))
+        except ValueError:
+            print("exception close")
+       
     def on_close(self):
         try:
             ChatSocketHandler.waiters.remove(self)
@@ -206,6 +212,8 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
             self.current_game.play_word(self, parsed["word"])
         elif parsed["msgtype"] == "queue":
             self.queue()
+        elif parsed["msgtype"] == "leave":
+            self.leave()
 
         # chat = {
         #     "id": str(uuid.uuid4()),

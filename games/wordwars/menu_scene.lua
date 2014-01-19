@@ -6,7 +6,7 @@ local GAME_HEIGHT = Application.viewHeight
 websocket = "WWWWWW"
 
 function onStartClick()
-    SceneManager:openScene("game_scene", { websocket = "X"})
+    SceneManager:openScene("wait_queue_scene", { websocket = "X"})
 end
 
 function onCreate(params)

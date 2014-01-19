@@ -40,5 +40,6 @@ TMXObject               = require "hp/tmx/TMXObject"
 TMXObjectGroup          = require "hp/tmx/TMXObjectGroup"
 TMXTileset              = require "hp/tmx/TMXTileset"
 GameService				= require "game_service"
+DownloadManager			= require "download_manager"
 
 return _G -- Dummy module

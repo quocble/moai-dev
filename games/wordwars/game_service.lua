@@ -64,5 +64,12 @@ function M:queueGame()
     ws:write(msg)
 end
 
+function M:leaveGameAndQueue()
+	print("Leave game and queue")
+    local send_word_to_server = { msgtype = "leave" }
+    msg = MOAIJsonParser.encode ( send_word_to_server )
+    ws:write(msg)
+end
+
 
 return M
