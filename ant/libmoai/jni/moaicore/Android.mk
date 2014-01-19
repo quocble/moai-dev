@@ -8,7 +8,8 @@
 
 	LOCAL_MODULE 		:= moaicore
 	LOCAL_ARM_MODE 		:= $(MY_ARM_MODE)
-	LOCAL_CFLAGS		:= -include $(MY_MOAI_ROOT)/src/zl-vfs/zl_replace.h
+	LOCAL_CFLAGS		:= -include $(MY_MOAI_ROOT)/src/zl-vfs/zl_replace.h -fexceptions
+	LOCAL_STATIC_LIBRARIES := boost_system boost_random
 
 	LOCAL_C_INCLUDES 	:= $(MY_HEADER_SEARCH_PATHS)
 	LOCAL_SRC_FILES 	+= $(wildcard $(MY_MOAI_ROOT)/src/moai-core/*.cpp) 
