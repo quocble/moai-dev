@@ -6,9 +6,8 @@ string = require("hp/lang/string")
 
 
 -- TODO LIST
--- Build words above the board as user drag.
-   -- after let go
-   -- check against dictionary
+-- Build words above the board as user drag. (done)
+   -- check against dictionary  (done)
       -- if not good word Glow / shake 
       -- if good word, calculate score (happy dance)
 -- facebook integration (next)
@@ -16,14 +15,16 @@ string = require("hp/lang/string")
 -- python build bot (done)
    -- build algorithm  (done)
    -- build client  (done)
--- python server
+-- python server (done)
    -- websocket pairing games (done)
-   -- client to server (full point for 1st, 2nd 50% )   
--- select diagonal
-
--- optimize board generation ( maybe score based on how many words can be found - everyday dictionary ) (done)
-
-
+   -- client to server (full point for 1st, 2nd 50% )   (done)
+-- select diagonal (done)
+-- optimize board generation ( maybe score based on how many words can be found - everyday dictionary ) (done) 
+-- prevent cheating through dead area / lower priority
+-- Waiting scene - coutdown going down.
+-- End game scene
+-- Test on phone
+-- Timer game-logic  / end game
 
 --------------------------------------------------------------------------------
 -- Const

@@ -63,7 +63,7 @@ class RandomPeriodicExecutor(threading.Thread):
     def run(self):
         while 1:
             rtime = randrange(5,10)
-            print("random time " + str(rtime))
+            #print("random time " + str(rtime))
             time.sleep(rtime)
             apply(self.func,self.params)
 
@@ -80,40 +80,52 @@ class GameBoard(peewee.Model):
 class Bot(object): 
 
   def __init__(self):
+    self.timer = RandomPeriodicExecutor(self.play_move, [])
+    self.timer.start()
+    self.playing = False
+
+    while(1):
+      self.connect()
+      time.sleep(5)
+
+  def connect(self):
+    print("Connect.")
     ws = websocket.WebSocketApp("ws://localhost:8888/ws",
                               on_message = self.on_message,
                               on_error = self.on_error,
                               on_close = self.on_close)
-
-    self.timer = RandomPeriodicExecutor(self.play_move, [])
-    self.timer.start()
-    ws.on_open = self.on_open
-    self.playing = False
     self.ws = ws
+    ws.on_open = self.on_open
     ws.run_forever()
 
   def play_move(self):
-    pos = randrange(len(self.possible_words) / 2 )
-    word = self.possible_words[pos]
-    print("play index= " + str(pos) + " " + word)
-    self.ws.send(json.dumps({'msgtype' : 'play', 'word' : word }))
+    if self.playing :
+      pos = randrange(len(self.possible_words) / 2 )
+      word = self.possible_words[pos]
+      print("play index= " + str(pos) + " " + word)
+      self.ws.send(json.dumps({'msgtype' : 'play', 'word' : word }))
 
   def on_message(self, ws, message):
-    print message
+    #print message
     obj = json.loads(message)
     if obj["msgtype"] == "new" :
-      print("new game!!!")
       self.board = obj["board"]
+      board_str = ''.join(self.board) 
+      print("## new game " + board_str + " ###")
 
       try:   
-        board_str = ''.join(self.board) 
         board_from_db = GameBoard.get(GameBoard.board == board_str)
         self.possible_words = json.loads(board_from_db.all_words)
-        print(self.possible_words)
+        #print(self.possible_words)
         print("possible words = " + str(len(self.possible_words)))
         self.playing = True
       except GameBoard.DoesNotExist:
         print("no board!!")
+    if obj["msgtype"] == "game_over" :
+      self.playing = False
+      print("## GAME OVER ##")
+      self.add_to_queue()
+
 
   def on_error(self, ws, error):
     print "#### " + str(error)
@@ -122,9 +134,12 @@ class Bot(object):
     self.playing = False
     print "### closed ###"
 
+  def add_to_queue(self):
+    self.ws.send(json.dumps({'msgtype' : 'queue', 'userid' : '' }))
+
   def on_open(self, ws):
     print "open"
-    self.ws.send(json.dumps({'msgtype' : 'queue', 'userid' : word }))
+    self.add_to_queue()
 
 def main():
   count = 1
@@ -143,18 +158,28 @@ def main():
   for n in range(count):
     thread = threading.Thread(target=Bot)
     threads.append(thread)
+    thread.daemon = True
     thread.start()
 
-  while len(threads) > 0:
-    try:
-    # Join all threads using a timeout so it doesn't block
-    # Filter out threads which have been joined or are None
-      threads = [t.join(1) for t in threads if t is not None and t.isAlive()]
-    except KeyboardInterrupt:
-      print "Ctrl-c received! Sending kill to threads..."
-      kill_threads(threads)
+  while True:
+        try:
+          input = raw_input('>')
+        except KeyboardInterrupt:
+            return
+        except EOFError:
+            return
+  # while len(threads) > 0:
+  #   try:
+  #   # Join all threads using a timeout so it doesn't block
+  #   # Filter out threads which have been joined or are None
+  #     threads = [t.join(1) for t in threads if t is not None and t.isAlive()]
+  #   except KeyboardInterrupt:
+  #     print "Ctrl-c received! Sending kill to threads..."
+  #     kill_threads(threads)
 
 if __name__ == "__main__":
   #websocket.enableTrace(True)
-  #while(1):
-  main()
+  try:
+      main()
+  except Exception as e:
+      print(e)

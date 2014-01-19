@@ -31,6 +31,7 @@ import peewee
 from peewee import *
 import json 
 import sys
+import threading
 
 from collections import deque
 from tornado.options import define, options
@@ -38,6 +39,7 @@ from tornado.options import define, options
 define("port", default=8888, help="run on the given port", type=int)
 
 PLAYER_COUNT = 1
+GAME_TIME = 15
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -78,6 +80,8 @@ class Game(object):
         self.players = players
         self.board = Game.makeBoard()
         self.words_play = []
+        self.game_timer = threading.Timer(GAME_TIME, self.game_over)
+        self.game_timer.start()
         print ("making new game with board")
         print (self.board)
 
@@ -94,7 +98,7 @@ class Game(object):
     @classmethod
     def makeBoard(self):
         try:   
-            boards = GameBoard.select().order_by(fn.Rand()).limit(1)
+            boards = GameBoard.select().where(GameBoard.possible_count > 150).order_by(fn.Rand()).limit(1)
             return boards[0]
         except GameBoard.DoesNotExist:
             print("no board")
@@ -119,12 +123,23 @@ class Game(object):
         for p in self.players:
             p.write_message(tornado.escape.json_encode(msg))
 
+    def game_over(self):
+        print("notify game over")
+        scores = []
+        
+        for player in self.players:
+            scores.append({'score' : player.score })
+
+        msg = { 'msgtype' : 'game_over', 'score' : scores }
+        for player in self.players:
+            player.write_message(tornado.escape.json_encode(msg))
+
+
 class ChatSocketHandler(tornado.websocket.WebSocketHandler):
     waiters = set()
     queue_players = deque() # queue of players looking for game.
     games   = []
     cache = []
-    player_per_game = PLAYER_COUNT
 
     def allow_draft76(self):
         # for iOS 5.0 Safari
@@ -141,8 +156,8 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
             print("add queue player " + hex(id(self)) + " total=" + str(len(ChatSocketHandler.queue_players)) + " players")
 
             players = []
-            if len(ChatSocketHandler.queue_players) >= ChatSocketHandler.player_per_game :
-                for n in range(ChatSocketHandler.player_per_game):
+            if len(ChatSocketHandler.queue_players) >= PLAYER_COUNT:
+                for n in range(PLAYER_COUNT):
                     players.append(ChatSocketHandler.queue_players.popleft())
                 
                 new_game = Game(players)    
