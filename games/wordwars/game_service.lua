@@ -49,6 +49,10 @@ function M:start()
     end
 end
 
+function M:write(msg)
+	ws:write(msg)
+end
+
 function M:addListener(obj)
 	table.insertElement(listeners, obj)
 end
