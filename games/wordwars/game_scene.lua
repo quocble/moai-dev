@@ -90,6 +90,25 @@ local ALL_TIME_MAX_STREAK = 0
 
 local CURRENT_WORD_LENGTH = 0
 local ALL_TIME_MAX_WORD_LENGTH = 0
+
+local A_BUTTON_STYLES = {
+    normal = {
+        skin = "./assets/btn_down.png",
+        skinColor = {1, 1, 1, 1.0},
+        textSize = 12
+    },
+    selected = {
+        skin = "./assets/btn_down.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    over = {
+        skin = "./assets/btn_down.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    disabled = {
+        skin = "./assets/btn_down.png",
+    },
+}
 --------------------------------------------------------------------------------
 -- Variables
 --------------------------------------------------------------------------------
@@ -119,6 +138,7 @@ function onCreate(params)
     makeBoard()
     makeNavigationBar()
     makeGameTimer()
+    makeBackButton()
     makeWebSocket()
     --makeLocalBoard()
     makeWordBox()
@@ -173,6 +193,10 @@ function onTouchUp(e)
     else
         CURRENT_MAX_STREAK = 0
     end
+end
+
+function onBackClick()
+    SceneManager:openScene("menu_scene")
 end
 
 function resetScale(skip_sprite, change_color)
@@ -259,6 +283,24 @@ function makeNavigationBar()
     --left, top, width, height, col
     local floor = Mesh.newRect(0, 0, GAME_WIDTH, 55, "#555C60")
     floor:setLayer(navView)
+end
+
+function makeBackButton()
+    local view = View {
+        scene = scene,
+        pos = {0, 0},
+        size = {GAME_WIDTH, 55},
+    }
+
+    backButton = Button {
+        name = "backButton",
+        text = "Back",
+        parent = view,
+        onClick = onBackClick,
+        pos = {10, 18},
+        size = {60, 35},
+        styles = { A_BUTTON_STYLES }
+    }
 end
 
 function makeGameTimer()

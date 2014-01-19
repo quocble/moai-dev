@@ -37,13 +37,6 @@ function onCreate(params)
  	params = test_results
     NUMBER_OF_PLAYERS = table.getn(params.players)
     PLAYER_LIST = params.players
-    --print(NUMBER_OF_PLAYERS)
-
-    -- print(params.players[1].name)
-    -- print(params.players[1].score)
-    -- print("most_words: " .. params["most_words"].name)
-    -- print("longest_streak: " .. params["longest_streak"].name)
-    -- print("longest_word: " .. params["longest_word"].name)
 
 	makeBackground()
 	makeTitleBar()
@@ -51,39 +44,6 @@ function onCreate(params)
 	makeAchievements(params)
 	makeButtons()
 	makeRankingPedestal(params)
-
-
-
-    -- view = View {
-    --     scene = scene,
-    --     pos = {0, 50},
-    --     layout = {
-    --         VBoxLayout {
-    --             align = {"center", "center"},
-    --             padding = {10, 10, 10, 30},
-    --         }
-    --     },
-    --     children = {{
-    --         Button {
-    --             name = "startButton",
-    --             text = "Play",
-    --             onClick = onStartClick,
-    --             size = { 175, 55}
-    --         },
-    --         Button {
-    --             name = "backButton",
-    --             text = "Invite",
-    --             onClick = onBackClick,
-    --             size = { 175, 55}
-    --         },
-    --         Button {
-    --             name = "testButton1",
-    --             text = "Help",
-    --             size = { 175, 55}
-    --         },
-    --     }},
-    -- }
-
 
 end
 
@@ -166,9 +126,46 @@ function makeAchievements(params)
 end	
 
 function makeButtons()
+
+	local view = View {
+		scene = scene,
+		pos = {0, GAME_HEIGHT/2},
+		size = { GAME_WIDTH, 55 },
+		layout = {
+			HBoxLayout {
+				align = {"center", "center"},
+				padding = {0, 0, 0, 0},
+				gap = {20, 10},
+			},
+		},
+		children = {{
+			Button {
+				name = "replayButton",
+				text = "Replay",
+				onClick = onReplayClick,
+				size = {GAME_WIDTH/2 - 40, 55}
+			},
+
+			Button {
+				name = "menuButton",
+				text = "Menu",
+				onClick = onMenuClick,
+				size = {GAME_WIDTH/2 - 40, 55},
+			},
+		}},
+	}
+
 end
 
 function makeRankingPedestal(params)
+end
+
+function onReplayClick()
+    SceneManager:openScene("wait_queue_scene")
+end
+
+function onMenuClick()
+    SceneManager:openScene("menu_scene")
 end
 
 function onStart()
