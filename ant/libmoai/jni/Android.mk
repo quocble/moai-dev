@@ -109,6 +109,8 @@
 	MY_HEADER_SEARCH_PATHS += $(MY_MOAI_ROOT)/3rdparty/tinyxml
 	MY_HEADER_SEARCH_PATHS += $(MY_MOAI_ROOT)/3rdparty/tlsf-2.0
 	MY_HEADER_SEARCH_PATHS += $(MY_MOAI_ROOT)/3rdparty/3rdparty/zlib-1.2.3
+	MY_HEADER_SEARCH_PATHS += $(MY_MOAI_ROOT)/3rdparty/websocketpp
+	MY_HEADER_SEARCH_PATHS += $(MY_MOAI_ROOT)/3rdparty/boost
 
 	ifeq ($(USE_FMOD),true)
 		MY_HEADER_SEARCH_PATHS += $(MY_MOAI_ROOT)/src/moai-fmod-ex
@@ -180,6 +182,7 @@
 # include submodules
 #----------------------------------------------------------------#
 
+	include boost/Android.mk
 	include box2d/Android.mk
 	include c-ares/Android.mk
 	include chipmunk/Android.mk
