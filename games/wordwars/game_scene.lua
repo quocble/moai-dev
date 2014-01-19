@@ -4,59 +4,6 @@ table = require "hp/lang/table"
 array = require "hp/lang/array"
 string = require("hp/lang/string")
 
-
--- GREGORY TASKS
---------------------------------
-    -- Game Scene
-      -- if not good word Glow / shake 
-      -- if good word, calculate score (happy dance)
-      -- load HTTP URL image
-      -- masking image into a circle
-    -- Result scene
-      -- Most combos
-      -- longest word
-      -- most number of words
-
--- QUOC TASKS
---------------------------------
-    -- Login Scene
-        -- facebook integration (next)
-        -- service call to store in db
-        -- web socket server query data
-    -- Waiting Scene
-    -- Android build
-
---------- COMPLETED ------------
---------------------------------
-
--- Build words above the board as user drag. (done)
-   -- check against dictionary  (done)
--- python build bot (done)
-   -- build algorithm  (done)
-   -- build client  (done)
--- python server (done)
-   -- websocket pairing games (done)
-   -- client to server (full point for 1st, 2nd 50% )   (done)
--- select diagonal (done)
--- optimize board generation ( maybe score based on how many words can be found - everyday dictionary ) (done) 
--- consecutive streak (done)
--- max word length (done)
--- finish game timer (done)
--- prevent cheating through dead area / lower priority
--- Waiting scene - coutdown going down.
--- End game scene
--- Test on phone
--- Timer game-logic  / end game
--- clean up diagonal w/ 2 rectangles
--- mask player images into circle
-
--- image from URL
--- back button > main menu
-
--- integrate powerups
-    -- blackout
-    -- wildcard
-
 --------------------------------------------------------------------------------
 -- Const
 --------------------------------------------------------------------------------
@@ -90,36 +37,23 @@ local ALL_TIME_MAX_STREAK = 0
 
 local CURRENT_WORD_LENGTH = 0
 local ALL_TIME_MAX_WORD_LENGTH = 0
---------------------------------------------------------------------------------
--- Variables
---------------------------------------------------------------------------------
--- letter distribution: aaaaaaaaabbccddddeeeeeeeeeeeeffggghhiiiiiiiiijkllllmmnnnnnnooooooooppqrrrrrrssssttttttuuuuvvwwxyyz
--- init random seed
+local ws = nil
+
 math.randomseed(os.time())
-
-
-
---------------------------------------------------------------------------------
--- Create
---------------------------------------------------------------------------------
 
 function onCreate(params)
 
+    GameService:addListener(WS_LISTENER)
+
     print(websocket)
     print(params.websocket)
-    -- makePhysicsWorld()
     
-    -- makeGameLayer()
-    -- makePlayer()
-    -- makeFloors()
-    -- makeWalls()
-    
-    -- makeGuiView()
     makeDictionary()
     makeBoard()
     makeNavigationBar()
     makeGameTimer()
-    makeWebSocket()
+    -- makeWebSocket()
+    setupGame(params.game)  
     --makeLocalBoard()
     makeWordBox()
     makePlayerScore()
@@ -127,6 +61,12 @@ function onCreate(params)
     -- makePlayers(4)
     -- setGameTimer(97)
 
+end
+
+function onDestroy()
+    print("onDestroy()")
+    GameService:leaveGameAndQueue()
+    GameService:removeListener(self)    
 end
 
 --------------------------------------------------------------------------------
@@ -137,14 +77,6 @@ function onStart()
 end
 
 function onEnterFrame()
-    -- if isGameOver() then
-    --     return
-    -- end
-    -- updatePlayer()
-    -- updateFloors()
-    -- updateScore()
-    -- updateLevel()
---    print(MOAISim.getStep())
     updateGameTimer()
 end
 
@@ -468,21 +400,21 @@ function updatePlayerScore()
         local send_word_to_server = { msgtype = "play", word = CurrentWordString }
         local msg = MOAIJsonParser.encode ( send_word_to_server )
         print(msg)
-        ws:write(msg)
+        GameService:write(msg)
     end
     if ALL_TIME_MAX_STREAK < CURRENT_MAX_STREAK then
         ALL_TIME_MAX_STREAK = CURRENT_MAX_STREAK
         local send_max_to_server = { msgtype = "word_streak", count = ALL_TIME_MAX_STREAK }
         local msg = MOAIJsonParser.encode(send_max_to_server)
         print(msg)
-        ws:write(msg)
+        GameService:write(msg)
     end
     if ALL_TIME_MAX_WORD_LENGTH < CURRENT_WORD_LENGTH then
         ALL_TIME_MAX_WORD_LENGTH = CURRENT_WORD_LENGTH
         local send_max_word_length_to_server = { msgtype = "max_word_length", word = CurrentWordString, count = ALL_TIME_MAX_WORD_LENGTH}
         local msg = MOAIJsonParser.encode(send_max_word_length_to_server)
         print(msg)
-        ws:write(msg)
+        GameService:write(msg)
     end
 end
 
@@ -543,6 +475,15 @@ end
 -- Network functions
 --------------------------------------------------------------------------------
 
+
+function setupGame(response)
+    PLAYER_ID = response["your_index"]
+    makeRemoteBoard(response["board"])
+    makePlayers(#response["players"])
+    setGameTimer(response["game_time"])
+    PLAYER_NAMES = response["players"]
+end
+
 function makeWebSocket()
     ws = MOAIWebSocket.new()
     ws:setListener ( MOAIWebSocket.ON_MESSAGE, onMessageReceived )
@@ -555,16 +496,12 @@ function makeWebSocket()
 
 end
 
-function onMessageReceived( msg ) 
+local WS_LISTENER = {}
+
+function WS_LISTENER.onMessageReceived( msg ) 
     print("WebSocket: " .. msg )
     response = MOAIJsonParser.decode ( msg )
-    if response["msgtype"] == "new" then
-        PLAYER_ID = response["your_index"]
-        makeRemoteBoard(response["board"])
-        makePlayers(#response["players"])
-        setGameTimer(response["game_time"])
-        PLAYER_NAMES = response["players"]
-    elseif response["msgtype"] == "score" then
+    if response["msgtype"] == "score" then
         if PLAYER_ID == response["player_index"] then
             PLAYER_SCORE = response["score"]
             PlayerScore:setText("" .. PLAYER_SCORE)
@@ -576,18 +513,18 @@ function onMessageReceived( msg )
     end
 end
 
-function onConnected( msg ) 
+function WS_LISTENER.onConnected( msg ) 
     print("WebSocket: " .. msg )
     local queue_msg = { msgtype = "queue" }
     local write_msg = MOAIJsonParser.encode(queue_msg)
-    ws:write(write_msg)
+    GameService:write(write_msg)
 end
 
-function onClosed( msg ) 
+function WS_LISTENER.onClosed( msg ) 
     print("WebSocket: " .. msg )
 end
 
-function onFailed( msg ) 
+function WS_LISTENER.onFailed( msg ) 
     print("WebSocket: " .. msg )
 end
 

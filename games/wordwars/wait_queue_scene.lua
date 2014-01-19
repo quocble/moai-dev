@@ -37,6 +37,8 @@ function LISTENER.onMessageReceived(msg)
     response = MOAIJsonParser.decode ( msg )
     if response["msgtype"] == 'player_join' then
         updatePlayers(response["player"])
+    elseif response["msgtype"] == 'new' then 
+        startGame(response)
     end
 end
 
@@ -155,6 +157,10 @@ function updatePlayers(players)
         end)
     end
 
+end
+
+function startGame(response)
+    SceneManager:openScene("game_scene", { game = response })    
 end
 
 function onStart()
