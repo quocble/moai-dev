@@ -38,8 +38,8 @@ from tornado.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 
-PLAYER_COUNT = 1
-GAME_TIME = 15
+PLAYER_COUNT = 2
+GAME_TIME = 30
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -108,7 +108,7 @@ class Game(object):
         for player in self.players:
             index = self.players.index(player) 
             board_arr = list(self.board.board)
-            msg = { 'msgtype' : 'new', 'board' : board_arr, 'your_index' : index , 'player_count' : len(self.players) }
+            msg = { 'msgtype' : 'new', 'board' : board_arr, 'your_index' : index , 'player_count' : len(self.players) , 'game_time' : GAME_TIME }
             player.write_message(tornado.escape.json_encode(msg))
 
     def play_word(self, player , word):

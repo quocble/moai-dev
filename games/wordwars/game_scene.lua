@@ -5,13 +5,32 @@ array = require "hp/lang/array"
 string = require("hp/lang/string")
 
 
--- TODO LIST
--- Build words above the board as user drag. (done)
-   -- check against dictionary  (done)
+-- GREGORY TASKS
+--------------------------------
+    -- Game Scene
       -- if not good word Glow / shake 
       -- if good word, calculate score (happy dance)
--- facebook integration (next)
-   -- send to server
+      -- load HTTP URL image
+      -- masking image into a circle
+    -- Result scene
+      -- Most combos
+      -- longest word
+      -- most number of words
+
+-- QUOC TASKS
+--------------------------------
+    -- Login Scene
+        -- facebook integration (next)
+        -- service call to store in db
+        -- web socket server query data
+    -- Waiting Scene
+    -- Android build
+
+--------- COMPLETED ------------
+--------------------------------
+
+-- Build words above the board as user drag. (done)
+   -- check against dictionary  (done)
 -- python build bot (done)
    -- build algorithm  (done)
    -- build client  (done)
@@ -37,9 +56,6 @@ string = require("hp/lang/string")
 -- integrate powerups
     -- blackout
     -- wildcard
-
-
-
 
 --------------------------------------------------------------------------------
 -- Const
@@ -89,6 +105,8 @@ math.randomseed(os.time())
 
 function onCreate(params)
 
+    print(websocket)
+    print(params.websocket)
     -- makePhysicsWorld()
     
     -- makeGameLayer()
@@ -116,7 +134,6 @@ end
 --------------------------------------------------------------------------------
 
 function onStart()
-
 end
 
 function onEnterFrame()
