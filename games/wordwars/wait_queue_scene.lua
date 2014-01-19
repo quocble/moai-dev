@@ -5,7 +5,7 @@ local GAME_HEIGHT = Application.viewHeight
 
 
 function onStartClick()
-    SceneManager:openScene("game_scene")
+    SceneManager:openScene("main_scene")
 end
 
 function onCreate(params)
