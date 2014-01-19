@@ -375,7 +375,7 @@ function makePlayerScore()
         size = {GAME_WIDTH, 40},
         pos = {0,  15},
         layer = navView,
-        color = string.hexToRGB( "#CCFF66", true ),
+        color = string.hexToRGB( "#01FF70", true ),
         align = {"center", "center"}
     }
 end
@@ -591,7 +591,7 @@ function showPointScore(player_index, amount)
     end
 
     local anim1 = Animation({score_text})
-        :moveLoc(0, -100, 0, 1, MOAIEaseType.EASE_OUT)
+        :moveLoc(0, -75, 0, 1, MOAIEaseType.EASE_IN)
         :moveColor(0, 0, 0, -1)
     anim1:play( { onComplete = removeScoreText(score_text) } )
 
