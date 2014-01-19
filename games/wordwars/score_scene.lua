@@ -32,7 +32,7 @@ function onCreate(params)
         longest_streak = { name = "Jan", streak = "7" }, 
         longest_word = { name = "Bob", word = "Longest_Word" }
     }
- 	params = test_results
+ 	--params = test_results
     NUMBER_OF_PLAYERS = table.getn(params.players)
     PLAYER_LIST = params.players
 

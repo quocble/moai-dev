@@ -124,20 +124,45 @@ class Game(object):
         if word not in self.words_play :
             point = 10
 
+        player.total_words += 1
         player.score += point
         msg = { 'msgtype' : 'score' , 'score' : player.score, 'player_index' : self.players.index(player) , 'word' : word, 'point' : point }
 
         for p in self.players:
             p.write_message(tornado.escape.json_encode(msg))
 
+    def play_streak(self, player, streak):
+        player.streak = streak
+
+    def play_max_wlength(self, player, max_word, max_wlength):
+        player.max_word = max_word
+        player.max_wlength = max_wlength
+
     def game_over(self):
         print("notify game over")
+        highest_streak = {'name' : '', 'streak' : 0}
+        highest_word_length = {'name' : '', 'word' : '', 'max_wlength' : 0, }
+        most_words = {'name' : '', 'count' : 0}
         scores = []
-        
-        for player in self.players:
-            scores.append({'score' : player.score })
 
-        msg = { 'msgtype' : 'game_over', 'score' : scores }
+        for player in self.players:
+            player.name = hex(id(self))
+            if highest_streak['streak'] < player.streak:
+                highest_streak['name'] = player.name
+                highest_streak['streak'] = player.streak
+            if highest_word_length['max_wlength'] < player.max_wlength:
+                highest_word_length['name'] = player.name
+                highest_word_length['word'] = player.max_word
+                highest_word_length['max_wlength'] = player.max_wlength
+            if most_words['count'] < player.total_words:
+                most_words['name'] = player.name
+                most_words['count'] = player.total_words
+            scores.append({'name' : hex(id(self)), 'score' : player.score })
+        msg = { 'msgtype' : 'game_over', 'players' : scores, 'most_words' : most_words, 
+                'longest_streak' : highest_streak, 'longest_word' : highest_word_length }
+        #for player in self.players:
+        #    scores.append({'score' : player.score })
+        #msg = { 'msgtype' : 'game_over', 'score' : scores }
         for player in self.players:
             player.write_message(tornado.escape.json_encode(msg))
 
@@ -186,7 +211,11 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
                 new_game.notify_new_game_after(6)
                 for player in players:
                     player.score = 0
+                    player.max_word = ""
+                    player.streak = 0
+                    player.max_wlength = 0
                     player.current_game = new_game
+                    player.total_words = 0
 
     def leave(self):
         try:
@@ -210,6 +239,12 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
         if parsed["msgtype"] == "play":
             print("score")
             self.current_game.play_word(self, parsed["word"])
+        elif parsed["msgtype"] == "word_streak":
+            print("word_streak")
+            self.current_game.play_streak(self, parsed["count"])
+        elif parsed["msgtype"] == "max_word_length":
+            print("max_word_length")
+            self.current_game.play_max_wlength(self, parsed["word"], parsed["count"])
         elif parsed["msgtype"] == "queue":
             self.queue()
         elif parsed["msgtype"] == "leave":
