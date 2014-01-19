@@ -27,7 +27,12 @@ string = require("hp/lang/string")
 -- Timer game-logic  / end game
 -- clean up diagonal w/ 2 rectangles
 -- mask player images into circle
--- finish game timer
+-- finish game timer (done)
+-- back button > main menu
+-- consecutive streak (done)
+-- max word length (done)
+-- integrate powerups
+
 
 
 --------------------------------------------------------------------------------
@@ -54,7 +59,15 @@ local GAME_TIME_SEC = 0
 local PLAYER_LIST = { }
 
 local LAST_TIMESTAMP = 0
+local CurrentWord = ""
+local PLAYER_NAMES = { }
 
+local SENT_BAD_WORD = false
+local CURRENT_MAX_STREAK = 0
+local ALL_TIME_MAX_STREAK = 0
+
+local CURRENT_WORD_LENGTH = 0
+local ALL_TIME_MAX_WORD_LENGTH = 0
 --------------------------------------------------------------------------------
 -- Variables
 --------------------------------------------------------------------------------
@@ -62,7 +75,7 @@ local LAST_TIMESTAMP = 0
 -- init random seed
 math.randomseed(os.time())
 
-CurrentWord = ""
+
 
 --------------------------------------------------------------------------------
 -- Create
@@ -131,7 +144,11 @@ end
 function onTouchUp(e)
     resetScale(nil, true)
     if checkWord() then
+        CURRENT_MAX_STREAK = CURRENT_MAX_STREAK + 1
+        CURRENT_WORD_LENGTH = #CurrentWordString
         updatePlayerScore()
+    else
+        CURRENT_MAX_STREAK = 0
     end
 end
 
@@ -167,9 +184,9 @@ function buildAndShuffle()
         end
     end
 
-    print(table.concat( bag, ", " ))
+    --print(table.concat( bag, ", " ))
     array.shuffle(bag)
-    print(table.concat( bag, ", " ))
+    --print(table.concat( bag, ", " ))
     return bag
 end
 
@@ -288,8 +305,6 @@ function makeWordBox()
         align = {"center", "center"}
     }
 
---    CurrentWordBox:setStretchRows(.25, 5, .25)
-
     CurrentWord = TextLabel {
         text = "",
         size = {GAME_WIDTH, 40},
@@ -299,7 +314,6 @@ function makeWordBox()
         align = {"center", "center"}
     }
 
-    print("making word box")
 end
 
 function makePlayerScore()
@@ -314,17 +328,15 @@ function makePlayerScore()
 end
 
 function makePlayers(num_of_players)
-    --PLAYER_LIST
     local margin = (GAME_WIDTH - (num_of_players * cell_w)) / 2
     for c=0, num_of_players - 1 do
         local player_group = Group { 
-                    --pos = {GAME_WIDTH/(num_of_players + 1), 0},
                     size = {cell_w, cell_h},
                     align = {"center", "center"},
                     layer = guiView
                 }
 
-        print("cell_w " .. cell_w .. " cell_height " .. cell_h)
+        --print("cell_w " .. cell_w .. " cell_height " .. cell_h)
         local player_image = Sprite {
                     texture = "./assets/word_tile_default.png", 
                     size  = { cell_w, cell_h },
@@ -340,16 +352,11 @@ function makePlayers(num_of_players)
                     pos = {0, cell_h - 8},
                     align = {"center", "center"}
                 }
-        -- player_group:addChild(player_image)
-        -- player.addChild(player_score)
-        -- player.resizeForChildren()
 
         player_group.player_image = player_image
         player_group.player_score = player_score
 
-        print(c * cell_w)
         player_group:setPos(margin + (c * 80), 65)
-        -- player_group:setPos(c * cell_w, 0)
         table.insert(PLAYER_LIST, player_group)
     end
 end
@@ -375,10 +382,9 @@ function updateTouchData(x, y)
     ideal_y = ((row - 1) * cell_h) + (GAME_HEIGHT - GAME_WIDTH)
     margin = 10
 
-    -- x, y , width, height
     smaller_rect = { x = ideal_x+margin, y = ideal_y + margin, width = cell_w - (2*margin), height = cell_h - (2*margin) }
-    print("x: " .. x .. "y: " .. y)
-    print("xbox " .. smaller_rect['x'] .. " ybox " .. smaller_rect['y'] .. " width " .. smaller_rect['width'] .. " height " .. smaller_rect['height'])
+    --print("x: " .. x .. "y: " .. y)
+    --print("xbox " .. smaller_rect['x'] .. " ybox " .. smaller_rect['y'] .. " width " .. smaller_rect['width'] .. " height " .. smaller_rect['height'])
     local isInSmallerRect = false
     if x >= smaller_rect['x'] and y >= smaller_rect['y']
         and x <= smaller_rect['x'] + smaller_rect['width']
@@ -392,7 +398,7 @@ function updateTouchData(x, y)
         local selected_cell = GameBoard[row][col]
         local sprite = selected_cell["sprite"]
         if not sprite.touching then
-            print("e.x= " .. x .. " e.y=" .. y .. " col=" .. col .. " row = " .. row)
+            --print("e.x= " .. x .. " e.y=" .. y .. " col=" .. col .. " row = " .. row)
             if not selected_cell.used_letter then
                 CurrentWordString = CurrentWordString .. selected_cell.letter
                 selected_cell.used_letter = true
@@ -410,7 +416,7 @@ end
 
 function updateWordBox()
     letter_length = string.len(CurrentWordString)
-    print(letter_length)
+    --print(letter_length)
     CurrentWordBox:setSize(letter_length*19, 60)
     CurrentWordBox:setCenterPos(GAME_WIDTH/2, GAME_HEIGHT - GAME_WIDTH - 40)
 end
@@ -428,6 +434,7 @@ function checkWord()
         print(CurrentWordString)
         return true
     end
+    return false
 end
 
 function updatePlayerScore()
@@ -436,7 +443,21 @@ function updatePlayerScore()
         --PLAYER_SCORE = PLAYER_SCORE + letter_length ^ 2 -- word score = word length^2
         --PlayerScore:setText("SCORE: " .. PLAYER_SCORE)
         local send_word_to_server = { msgtype = "play", word = CurrentWordString }
-        msg = MOAIJsonParser.encode ( send_word_to_server )
+        local msg = MOAIJsonParser.encode ( send_word_to_server )
+        print(msg)
+        ws:write(msg)
+    end
+    if ALL_TIME_MAX_STREAK < CURRENT_MAX_STREAK then
+        ALL_TIME_MAX_STREAK = CURRENT_MAX_STREAK
+        local send_max_to_server = { msgtype = "word_streak", count = ALL_TIME_MAX_STREAK }
+        local msg = MOAIJsonParser.encode(send_max_to_server)
+        print(msg)
+        ws:write(msg)
+    end
+    if ALL_TIME_MAX_WORD_LENGTH < CURRENT_WORD_LENGTH then
+        ALL_TIME_MAX_WORD_LENGTH = CURRENT_WORD_LENGTH
+        local send_max_word_length_to_server = { msgtype = "max_word_length", word = CurrentWordString, count = ALL_TIME_MAX_WORD_LENGTH}
+        local msg = MOAIJsonParser.encode(send_max_word_length_to_server)
         print(msg)
         ws:write(msg)
     end
@@ -470,7 +491,7 @@ end
 
 function gameOver(score_results)
     print("GAME OVER")
-    SceneManager:openScene("score_scene", { results = score_results })
+    SceneManager:openScene("score_scene", { results = score_results, names = PLAYER_NAMES })
 end
 
 --------------------------------------------------------------------------------
@@ -499,8 +520,9 @@ function onMessageReceived( msg )
     if response["msgtype"] == "new" then
         PLAYER_ID = response["your_index"]
         makeRemoteBoard(response["board"])
-        makePlayers(response["player_count"])
+        makePlayers(#response["players"])
         setGameTimer(response["game_time"])
+        PLAYER_NAMES = response["player_names"]
     elseif response["msgtype"] == "score" then
         if PLAYER_ID == response["player_index"] then
             PLAYER_SCORE = response["score"]
@@ -516,7 +538,7 @@ end
 function onConnected( msg ) 
     print("WebSocket: " .. msg )
     local queue_msg = { msgtype = "queue" }
-    write_msg = MOAIJsonParser.encode(queue_msg)
+    local write_msg = MOAIJsonParser.encode(queue_msg)
     ws:write(write_msg)
 end
 
@@ -535,29 +557,31 @@ end
 function showPointScore(player_index, amount)
 
     local left, top = PLAYER_LIST[player_index]:getPos()
-    print ("left " .. left)
 
     local score_text = TextLabel {
         text = "+" .. amount,
         size = {cell_w, 40},
         pos = { left, cell_h },
-        layer = guiView,
+        layer = navView,
         color = string.hexToRGB( "#120255", true ),
         align = {"center", "center"}
     }
 
-    local anim1 = Animation({score_text}, 5)
-        :moveLoc(0, -150, 0, 1, MOAIEaseType.EASE_OUT)
-    anim1:play()
-    -- anim1:setListener ( MOAIAction.EVENT_STOP, function ()
-    --     local x, y = score_text:getLoc()
-    --     if y > GAME_HEIGHT/2 then
-    --         guiView:removeProp(score_text)
-    --         score_text = nil
-    --     end
-    -- end )
+    local anim1 = Animation({score_text})
+        :moveLoc(0, -100, 0, 1, MOAIEaseType.EASE_OUT)
+        :moveColor(0, 0, 0, -1)
+    -- anim1:setListener(MOAIAction.EVENT_STOP, removeScoreText(score_text))
+    anim1:play( { onComplete = removeScoreText(score_text) } )
 
 end
+
+function removeScoreText(score_text)
+    local x, y = score_text:getLoc()
+    if y < 0 then
+        guiView:removeProp(score_text)
+        score_text = nil
+    end
+end 
 
 function setGameTimer(time_in_sec)
     GAME_TIME_SEC = 0 + time_in_sec
