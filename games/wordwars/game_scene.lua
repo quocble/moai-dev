@@ -569,19 +569,30 @@ end
 function showPointScore(player_index, amount)
     local left, top = PLAYER_LIST[player_index]:getPos()
 
-    local score_text = TextLabel {
+    local score_text 
+    if PLAYER_ID == player_index - 1 then
+        score_text = TextLabel { 
         text = "+" .. amount,
         size = {cell_w, 40},
         pos = { left, cell_h },
         layer = navView,
-        color = string.hexToRGB( "#120255", true ),
+        color = string.hexToRGB( "#01FF70", true ),
         align = {"center", "center"}
-    }
+        }
+    else
+        score_text = TextLabel { 
+        text = "+" .. amount,
+        size = {cell_w, 40},
+        pos = { left, cell_h },
+        layer = navView,
+        color = string.hexToRGB( "#FF4136", true ),
+        align = {"center", "center"}
+        }
+    end
 
     local anim1 = Animation({score_text})
         :moveLoc(0, -100, 0, 1, MOAIEaseType.EASE_OUT)
         :moveColor(0, 0, 0, -1)
-    -- anim1:setListener(MOAIAction.EVENT_STOP, removeScoreText(score_text))
     anim1:play( { onComplete = removeScoreText(score_text) } )
 
 end
