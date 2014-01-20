@@ -68,7 +68,7 @@ math.randomseed(os.time())
 function setupGame(response)
     PLAYER_ID = response["your_index"]
     makeRemoteBoard(response["board"])
-    makePlayers(#response["players"])
+    makePlayers(response["players"])
     setGameTimer(response["game_time"])
     PLAYER_NAMES = response["players"]
 end
@@ -118,6 +118,8 @@ function WS_LISTENER.onFailed( msg )
 end
 
 function onCreate(params)
+
+
 
     GameService:addListener(WS_LISTENER)
 
@@ -380,8 +382,10 @@ function makePlayerScore()
     }
 end
 
-function makePlayers(num_of_players)
+function makePlayers(players)
+    num_of_players = #players
     local margin = (GAME_WIDTH - (num_of_players * cell_w)) / 2
+
     for c=0, num_of_players - 1 do
         local player_group = Group { 
                     size = {cell_w, cell_h},
@@ -396,6 +400,17 @@ function makePlayers(num_of_players)
                     parent = player_group,
                     pos = {0, 0},
                 }
+        DownloadManager:request(players[c + 1].profile_img, function(filePath)
+            print("read from " .. filePath)
+            player_image:setTexture(filePath)
+        end)
+
+        local mask_img = Sprite {
+            texture = "./assets/mask_img.png", 
+            size  = { cell_w, cell_h },
+            parent = player_group,
+            pos = {0, 0},
+        }
 
         local player_score = TextLabel {
                     text = "0",
@@ -408,6 +423,7 @@ function makePlayers(num_of_players)
 
         player_group.player_image = player_image
         player_group.player_score = player_score
+        player_group.mask_imag = mask_img
 
         player_group:setPos(margin + (c * 80), 65)
         table.insert(PLAYER_LIST, player_group)
@@ -546,11 +562,11 @@ function isGameOver()
 end
 
 function gameOver(game_over_results)
-    print("GAME OVER")
-    print("PLAYER_NAMES: ")
-    print(PLAYER_NAMES)
-    print("game_over_results: ")
-    print(game_over_results)
+    -- print("GAME OVER")
+    -- print("PLAYER_NAMES: ")
+    -- print(PLAYER_NAMES)
+    -- print("game_over_results: ")
+    -- print(game_over_results)
     --SceneManager:openScene(game_over_results)
     --SceneManager:openScene(test_results)
     SceneManager:openScene("score_scene", game_over_results)

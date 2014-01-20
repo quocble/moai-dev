@@ -81,7 +81,7 @@ class Game(object):
         self.players = players
         self.board = Game.makeBoard()
         self.words_play = []
-        self.game_timer = threading.Timer(GAME_TIME + LOADING_DELAY + 2, self.game_over)
+        self.game_timer = threading.Timer(GAME_TIME + LOADING_DELAY + 1, self.game_over)
         self.game_timer.start()
         print ("making new game with board")
         print (self.board)
@@ -111,7 +111,7 @@ class Game(object):
         print("notify new game")
         player_obj = []
         for player in self.players:
-            player_obj.append({'player_name' : 'Name X' })
+            player_obj.append({'player_name' : 'Name X', 'profile_img' : player.profile_img })
 
         for player in self.players:
             index = self.players.index(player) 
@@ -158,7 +158,7 @@ class Game(object):
             if most_words['count'] < player.total_words:
                 most_words['name'] = player.name
                 most_words['count'] = player.total_words
-            scores.append({'name' : hex(id(self)), 'score' : player.score })
+            scores.append({'name' : hex(id(self)), 'score' : player.score, 'profile_img' : player.profile_img })
         msg = { 'msgtype' : 'game_over', 'players' : scores, 'most_words' : most_words, 
                 'longest_streak' : highest_streak, 'longest_word' : highest_word_length }
         for player in self.players:

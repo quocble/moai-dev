@@ -3,12 +3,12 @@
     -- Game Scene
       -- if not good word Glow / shake 
       -- if good word, calculate score (happy dance)
-      -- load HTTP URL image
+      -- load HTTP URL image (done)
       -- masking image into a circle
     -- Result scene
-      -- Most combos
-      -- longest word
-      -- most number of words
+      -- Most combos (done)
+      -- longest word (done) 
+      -- most number of words (done)
 
 -- QUOC TASKS
 --------------------------------
