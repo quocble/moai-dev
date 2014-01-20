@@ -19,14 +19,14 @@
 	app_platform="android-10"
 	use_fmod="false"
 	use_untz="true"
-	use_luajit="true"
+	use_luajit="false"
 	adcolony_flags=
 	billing_flags=
 	chartboost_flags=
 	crittercism_flags=
 	facebook_flags=
 	push_flags=
-	tapjoy_flags=
+	tapjoy_flags="false"
 	twitter_flags=
 	
 	while [ $# -gt 0 ];	do

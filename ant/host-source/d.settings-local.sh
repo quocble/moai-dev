@@ -11,7 +11,7 @@
 # slashes as directory separators, e.g. C:/android-sdk)
 #----------------------------------------------------------------#
 
-	android_sdk_root=""
+	android_sdk_root="~/android-sdks"
 
 #----------------------------------------------------------------#
 # space-delimited list of source lua directories to add to the 
@@ -19,14 +19,14 @@
 # the assets directory of the bundle
 #----------------------------------------------------------------#
 
-	src_dirs=( "../../samples/anim/anim-basic" )
+	src_dirs=( "../../games/wordwars" )
 	dest_dirs=(	"lua" )
 
 #----------------------------------------------------------------#
 # Set the orientation of the screen.(landscape, portrait, etc...)
 #----------------------------------------------------------------#
 
-	screenOrientation="landscape"
+	screenOrientation="portrait"
 
 #----------------------------------------------------------------#
 # space-delimited list of asset directories to add to the 
