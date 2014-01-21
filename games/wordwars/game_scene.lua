@@ -30,6 +30,7 @@ local PLAYER_LIST = { }
 local LAST_TIMESTAMP = 0
 local CurrentWord = ""
 local PLAYER_NAMES = { }
+local LAST_SELECTED_CELL = { }
 
 local SENT_BAD_WORD = false
 local CURRENT_MAX_STREAK = 0
@@ -163,6 +164,7 @@ function onTouchDown(e)
     e.y = e.y / scale
     CurrentWordString = ""
     clearSelectedLetters()
+    LAST_SELECTED_CELL = {math.ceil(e.x / cell_w), math.ceil((e.y - (GAME_HEIGHT - GAME_WIDTH)) / cell_h)}
     updateTouchData(e.x, e.y)
 end
 
@@ -468,14 +470,17 @@ function updateTouchData(x, y)
 
     if col >= 1 and col <= BOARD_SIZE["width"] and
         row >= 1 and row <= BOARD_SIZE["height"] and isInSmallerRect then
-
+        
         local selected_cell = GameBoard[row][col]
         local sprite = selected_cell["sprite"]
-        if not sprite.touching then
+        local cell_dist_x = math.abs(row - LAST_SELECTED_CELL[2])
+        local cell_dist_y = math.abs(col - LAST_SELECTED_CELL[1])
+        if not sprite.touching and cell_dist_x <= 1 and cell_dist_y <= 1 then
             --print("e.x= " .. x .. " e.y=" .. y .. " col=" .. col .. " row = " .. row)
             if not selected_cell.used_letter then
                 CurrentWordString = CurrentWordString .. selected_cell.letter
                 selected_cell.used_letter = true
+                LAST_SELECTED_CELL = {col, row} -- flipped values 
             end
             CurrentWord:setText(CurrentWordString)
             updateWordBox()
@@ -484,6 +489,10 @@ function updateTouchData(x, y)
             sprite.touching = true
 
             resetScale(sprite, false)
+        else
+            print("row_old: " .. col .. " row_old: " .. LAST_SELECTED_CELL[2])
+            print("col_new: " .. row .. " col_old: " .. LAST_SELECTED_CELL[1])            
+            print("dist_x: ".. cell_dist_x .. " dist_y: " .. cell_dist_y)
         end
     end
 end

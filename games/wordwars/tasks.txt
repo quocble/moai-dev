@@ -36,7 +36,6 @@
 -- consecutive streak (done)
 -- max word length (done)
 -- finish game timer (done)
--- prevent cheating through dead area / lower priority
 -- Waiting scene - coutdown going down.
 -- End game scene
 -- Test on phone
@@ -49,7 +48,7 @@
 -- image from URL (done)
 -- fixed game timer layout for android/ios (done)
 -- fixed issue with name value from server when going to score_scene
-
+-- prevent cheating through dead area / lower priority (done)
 
 
 -- back button > main menu
