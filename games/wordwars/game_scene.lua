@@ -296,14 +296,15 @@ end
 function makeGameTimer()
     GameTimer = TextLabel {
         text = "0:00",
-        size = {40, 20},
-        pos = {250,  13},
+        size = {GAME_WIDTH, 20},
+        pos = {-10,  25},
+        font = "arial-rounded",
         layer = navView,
         color = string.hexToRGB( "#FFFFFF", true ),
-        align = {"center", "center"}
+        align = {"right", "center"}
         }
     GameTimer:setTextSize(15)
-    GameTimer:fitSize()
+    -- GameTimer:fitSize()
 end
 
 function makeLocalBoard()
@@ -416,10 +417,14 @@ function makePlayers(players)
                     text = "0",
                     size = {cell_w, 40},
                     parent = player_group,
-                    color = string.hexToRGB( "#000000", true ),
+                    color = string.hexToRGB( "#FFDC00", true ),
                     pos = {0, cell_h - 8},
                     align = {"center", "center"}
                 }
+
+        if PLAYER_ID == c then
+            player_score:setColor(unpack(string.hexToRGB( "#2ECC40", true )))
+        end  
 
         player_group.player_image = player_image
         player_group.player_score = player_score
@@ -544,6 +549,9 @@ function updateGameTimer()
             if sec < 10 then 
                 sec = "0" .. sec
             end
+            if GAME_TIME_SEC < 5 and GAME_TIME_SEC > 4 then
+                GameTimer:setColor(unpack(string.hexToRGB("#FF4136", true)))
+            end
             GameTimer:setText(min .. ":" .. sec)
         end
 
@@ -584,26 +592,27 @@ end
 
 function showPointScore(player_index, amount)
     local left, top = PLAYER_LIST[player_index]:getPos()
+    local score_color
+    -- if PLAYER_ID == player_index - 1 then
+    --     score_color = string.hexToRGB( "#01FF70", true )
+    -- else
+    --     score_color = string.hexToRGB( "#FF4136", true )
+    -- end
 
-    local score_text 
+    score_text = TextLabel { 
+        text = "+" .. amount,
+        size = {cell_w, 40},
+        pos = { left, cell_h },
+        layer = navView,
+        font = "arial-rounded",
+        color = score_color,
+        align = {"center", "center"}
+        }
+
     if PLAYER_ID == player_index - 1 then
-        score_text = TextLabel { 
-        text = "+" .. amount,
-        size = {cell_w, 40},
-        pos = { left, cell_h },
-        layer = navView,
-        color = string.hexToRGB( "#01FF70", true ),
-        align = {"center", "center"}
-        }
+        score_text:setColor(unpack(string.hexToRGB( "#01FF70", true )))
     else
-        score_text = TextLabel { 
-        text = "+" .. amount,
-        size = {cell_w, 40},
-        pos = { left, cell_h },
-        layer = navView,
-        color = string.hexToRGB( "#FF4136", true ),
-        align = {"center", "center"}
-        }
+        score_text:setColor(unpack(string.hexToRGB( "#FF4136", true )))
     end
 
     local anim1 = Animation({score_text})

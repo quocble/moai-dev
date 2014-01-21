@@ -147,7 +147,6 @@ class Game(object):
         scores = []
 
         for player in self.players:
-            player.name = hex(id(self))
             if highest_streak['streak'] < player.streak:
                 highest_streak['name'] = player.name
                 highest_streak['streak'] = player.streak
@@ -158,9 +157,10 @@ class Game(object):
             if most_words['count'] < player.total_words:
                 most_words['name'] = player.name
                 most_words['count'] = player.total_words
-            scores.append({'name' : hex(id(self)), 'score' : player.score, 'profile_img' : player.profile_img })
+            scores.append({'name' : player.name, 'score' : player.score, 'profile_img' : player.profile_img })
         msg = { 'msgtype' : 'game_over', 'players' : scores, 'most_words' : most_words, 
                 'longest_streak' : highest_streak, 'longest_word' : highest_word_length }
+        print(msg)
         for player in self.players:
             player.write_message(tornado.escape.json_encode(msg))
 
@@ -203,12 +203,12 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
             if len(ChatSocketHandler.queue_players) >= PLAYER_COUNT:
                 for n in range(PLAYER_COUNT):
                     players.append(ChatSocketHandler.queue_players.popleft())
-                
                 new_game = Game(players)    
                 ChatSocketHandler.games.append(new_game)
                 new_game.notify_new_game_after(LOADING_DELAY)
                 for player in players:
                     player.score = 0
+                    player.name = hex(id(player))
                     player.max_word = ""
                     player.streak = 0
                     player.max_wlength = 0

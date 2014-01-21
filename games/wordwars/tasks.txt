@@ -6,9 +6,10 @@
       -- load HTTP URL image (done)
       -- masking image into a circle
     -- Result scene
-      -- Most combos (done)
-      -- longest word (done) 
-      -- most number of words (done)
+      -- circlular mask of profile images
+      -- added word length cap to names 
+        -- need to figure out solution for wider resolution, iphone is ok
+
 
 -- QUOC TASKS
 --------------------------------
@@ -42,10 +43,16 @@
 -- Timer game-logic  / end game
 -- clean up diagonal w/ 2 rectangles
 -- mask player images into circle
+-- Most combos (done)
+-- longest word (done)
+-- most number of words (done)
+-- image from URL (done)
+-- fixed game timer layout for android/ios (done)
+-- fixed issue with name value from server when going to score_scene
 
--- image from URL
+
+
 -- back button > main menu
-
 -- integrate powerups
     -- blackout
     -- wildcard
