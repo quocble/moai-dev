@@ -22,6 +22,8 @@ function M.fromPex(particleName)
     self:reserveSprites(plugin:getMaxParticles())
     self:reserveStates(1)
     self:setBlendMode(plugin:getBlendMode())
+    self._duration = plugin:getDuration ()
+    self._lifespan = plugin:getLifespan ()
 
     local state = MOAIParticleState.new()
     state:setTerm(plugin:getLifespan())

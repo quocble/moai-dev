@@ -119,13 +119,7 @@ function WS_LISTENER.onFailed( msg )
 end
 
 function onCreate(params)
-
-
-
     GameService:addListener(WS_LISTENER)
-
-    print(websocket)
-    print(params.websocket)
     
     makeDictionary()
     makeBoard()
@@ -136,6 +130,8 @@ function onCreate(params)
     --makeLocalBoard()
     makeWordBox()
     makePlayerScore()
+    loadParticles()
+
     -- makeGameTimer()
     -- makePlayers(4)
     -- setGameTimer(97)
@@ -181,6 +177,7 @@ function onTouchUp(e)
         CURRENT_MAX_STREAK = CURRENT_MAX_STREAK + 1
         CURRENT_WORD_LENGTH = #CurrentWordString
         updatePlayerScore()
+        playStars()
     else
         CURRENT_MAX_STREAK = 0
     end
@@ -213,6 +210,20 @@ end
 --------------------------------------------------------------------------------
 -- Make Functions
 --------------------------------------------------------------------------------
+
+function loadParticles()
+    particle = Particles.fromPex("./assets/star04.pex")
+    particle:setLayer(guiView)
+    particle.emitter:setLoc(GAME_WIDTH/2, 170)
+    particle.emitter:forceUpdate()
+    particle:start()
+end
+
+function playStars()
+    particle.emitter:forceUpdate()
+    particle:stopParticle()
+    particle:startParticle()
+end
 
 function buildAndShuffle()
     local bag = {}

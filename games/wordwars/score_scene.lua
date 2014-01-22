@@ -180,42 +180,50 @@ function makeRankingPedestal(params)
     	parent = pedestal_group,
 	}
 
-	local first_place = Sprite {
-        texture = "./assets/word_tile_default.png", 
+	local first_place = MaskSprite {
         size  = {75, 75},
         parent = pedestal_group,
         pos = {(319-75)/2,  -70},
+	    mask = "./assets/mask_img.png",
+	    main = "./assets/mask_img.png",
+	    border = "./assets/border_img.png"        
 	}
 	table.insert(ranking, first_place)
 
-	local second_place = Sprite {
-        texture = "./assets/word_tile_default.png", 
+	local second_place = MaskSprite {
         parent = pedestal_group,
         size  = { 60, 60 },
         pos = {51, 0},
+	    mask = "./assets/mask_img.png",
+	    main = "./assets/mask_img.png",
+	    border = "./assets/border_img.png"        
 	}
 	table.insert(ranking, second_place)
 
-	local third_place = Sprite {
-        texture = "./assets/word_tile_default.png", 
+	local third_place = MaskSprite {
         parent = pedestal_group,
         size  = { 75, 75 },
         pos = {203, 8},
+	    mask = "./assets/mask_img.png",
+	    main = "./assets/mask_img.png",
+	    border = "./assets/border_img.png"
 	}
 	table.insert(ranking, third_place)
 
-	local fourth_place = Sprite {
-        texture = "./assets/word_tile_default.png", 
+	local fourth_place = MaskSprite {
         parent = pedestal_group,
         size  = { 50, 50 },
         pos = {319-70, 106},
+	    mask = "./assets/mask_img.png",
+	    main = "./assets/mask_img.png",
+	    border = "./assets/border_img.png"
 	}
 	table.insert(ranking, fourth_place)
 
     for p=0, NUMBER_OF_PLAYERS - 1 do
         DownloadManager:request(PLAYER_LIST[p + 1].profile_img, function(filePath)
             -- print("read from " .. filePath)
-            ranking[p + 1]:setTexture(filePath)
+            ranking[p + 1]:setTexture(filePath, "main")
     	end)
     end    	
 end

@@ -7,7 +7,7 @@ MOAISim.setBoostThreshold ( 0 )
 -- Screen size setting
 local screenWidth = MOAIEnvironment.horizontalResolution or 320
 local screenHeight = MOAIEnvironment.verticalResolution or 480
-local viewScale = screenWidth >= 640 and 2 or 1
+local viewScale = (screenWidth/320)
 
 -- Application config
 local config = {
