@@ -141,12 +141,12 @@ function updatePlayers(players)
     print("updating players " .. #players)    
     count = #allPlayers
     for i, player in ipairs(players) do
-        playerViews[count+i]:setVisible(true)
-        playerViews[count+i].name:setText(player.player_name)
         table.insert(allPlayers, player)
 
         DownloadManager:request(player.profile_img, function(filePath)
             playerViews[count+i].image:setTexture(filePath, "main")
+            playerViews[count+i].name:setText(player.player_name)
+            Animation({playerViews[count+i]}):setVisible(true):fadeIn():play()
         end)
     end
 

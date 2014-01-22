@@ -5,7 +5,7 @@ array = require "hp/lang/array"
 string = require("hp/lang/string")
 
 selectSound             = SoundManager:getSound("./assets/A_select.ogg", 0.2)
-goodSound             = SoundManager:getSound("./assets/A_combo1.ogg", 0.5)
+goodSound             = SoundManager:getSound("./assets/A_combo1.caf", 0.5)
 failSound             = SoundManager:getSound("./assets/A_falsemove.ogg", 0.5)
 
 --------------------------------------------------------------------------------
