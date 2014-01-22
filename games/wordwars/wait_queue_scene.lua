@@ -145,7 +145,6 @@ function updatePlayers(players)
         table.insert(allPlayers, player)
 
         DownloadManager:request(player.profile_img, function(filePath)
-            print("read from " .. filePath)
             playerViews[count+i].image:setTexture(filePath, "main")
         end)
     end

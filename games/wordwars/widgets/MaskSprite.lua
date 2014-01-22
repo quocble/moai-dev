@@ -95,7 +95,7 @@ function M:setTexture(texture, texture_type)
     if self.texture == nil then
         self.texture = texture
     end
-
+    print("SETTTING " .. texture_type)
     if texture_type == "mask" then
         self.multitexture:setTexture ( 2, texture )
 	elseif texture_type == "border" then

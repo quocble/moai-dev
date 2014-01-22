@@ -30,6 +30,7 @@ local PLAYER_LIST = { }
 local LAST_TIMESTAMP = 0
 local CurrentWord = ""
 local PLAYER_NAMES = { }
+local LAST_SELECTED_CELL = { }
 
 local SENT_BAD_WORD = false
 local CURRENT_MAX_STREAK = 0
@@ -69,7 +70,7 @@ function setupGame(response)
     PLAYER_ID = response["your_index"]
     PLAYER_NAMES = response["players"]
     makeRemoteBoard(response["board"])
-    makePlayers(#response["players"])
+    makePlayers(response["players"])
     setGameTimer(response["game_time"])
 end
 
@@ -119,6 +120,8 @@ end
 
 function onCreate(params)
 
+
+
     GameService:addListener(WS_LISTENER)
 
     print(websocket)
@@ -161,6 +164,7 @@ function onTouchDown(e)
     e.y = e.y / scale
     CurrentWordString = ""
     clearSelectedLetters()
+    LAST_SELECTED_CELL = {math.ceil(e.x / cell_w), math.ceil((e.y - (GAME_HEIGHT - GAME_WIDTH)) / cell_h)}
     updateTouchData(e.x, e.y)
 end
 
@@ -294,14 +298,15 @@ end
 function makeGameTimer()
     GameTimer = TextLabel {
         text = "0:00",
-        size = {40, 20},
-        pos = {250,  13},
+        size = {GAME_WIDTH, 20},
+        pos = {-10,  25},
+        font = "arial-rounded",
         layer = navView,
         color = string.hexToRGB( "#FFFFFF", true ),
-        align = {"center", "center"}
+        align = {"right", "center"}
         }
     GameTimer:setTextSize(15)
-    GameTimer:fitSize()
+    -- GameTimer:fitSize()
 end
 
 function makeLocalBoard()
@@ -375,13 +380,15 @@ function makePlayerScore()
         size = {GAME_WIDTH, 40},
         pos = {0,  15},
         layer = navView,
-        color = string.hexToRGB( "#CCFF66", true ),
+        color = string.hexToRGB( "#01FF70", true ),
         align = {"center", "center"}
     }
 end
 
-function makePlayers(num_of_players)
+function makePlayers(players)
+    num_of_players = #players
     local margin = (GAME_WIDTH - (num_of_players * cell_w)) / 2
+
     for c=0, num_of_players - 1 do
         local player_group = Group { 
                     size = {cell_w, cell_h},
@@ -403,21 +410,23 @@ function makePlayers(num_of_players)
                     text = "0",
                     size = {cell_w, 40},
                     parent = player_group,
-                    color = string.hexToRGB( "#000000", true ),
+                    color = string.hexToRGB( "#FFDC00", true ),
                     pos = {0, cell_h - 8},
                     align = {"center", "center"}
                 }
 
-        print(PLAYER_NAMES.profile_img)
-        DownloadManager:request(PLAYER_NAMES[c+1].profile_img, function(filePath)
-            print("read from " .. filePath)
-            player_image:setTexture(filePath, "main")
-        end)
+        if PLAYER_ID == c then
+            player_score:setColor(unpack(string.hexToRGB( "#2ECC40", true )))
+        end  
 
         player_group.player_image = player_image
         player_group.player_score = player_score
-
         player_group:setPos(margin + (c * 80), 65)
+
+        DownloadManager:request(players[c + 1].profile_img, function(filePath)
+            player_image:setTexture(filePath, "main")
+        end)
+
         table.insert(PLAYER_LIST, player_group)
     end
 end
@@ -455,14 +464,17 @@ function updateTouchData(x, y)
 
     if col >= 1 and col <= BOARD_SIZE["width"] and
         row >= 1 and row <= BOARD_SIZE["height"] and isInSmallerRect then
-
+        
         local selected_cell = GameBoard[row][col]
         local sprite = selected_cell["sprite"]
-        if not sprite.touching then
+        local cell_dist_x = math.abs(row - LAST_SELECTED_CELL[2])
+        local cell_dist_y = math.abs(col - LAST_SELECTED_CELL[1])
+        if not sprite.touching and cell_dist_x <= 1 and cell_dist_y <= 1 then
             --print("e.x= " .. x .. " e.y=" .. y .. " col=" .. col .. " row = " .. row)
             if not selected_cell.used_letter then
                 CurrentWordString = CurrentWordString .. selected_cell.letter
                 selected_cell.used_letter = true
+                LAST_SELECTED_CELL = {col, row} -- flipped values 
             end
             CurrentWord:setText(CurrentWordString)
             updateWordBox()
@@ -471,6 +483,10 @@ function updateTouchData(x, y)
             sprite.touching = true
 
             resetScale(sprite, false)
+        else
+            print("row_old: " .. col .. " row_old: " .. LAST_SELECTED_CELL[2])
+            print("col_new: " .. row .. " col_old: " .. LAST_SELECTED_CELL[1])            
+            print("dist_x: ".. cell_dist_x .. " dist_y: " .. cell_dist_y)
         end
     end
 end
@@ -536,6 +552,9 @@ function updateGameTimer()
             if sec < 10 then 
                 sec = "0" .. sec
             end
+            if GAME_TIME_SEC < 5 and GAME_TIME_SEC > 4 then
+                GameTimer:setColor(unpack(string.hexToRGB("#FF4136", true)))
+            end
             GameTimer:setText(min .. ":" .. sec)
         end
 
@@ -554,11 +573,11 @@ function isGameOver()
 end
 
 function gameOver(game_over_results)
-    print("GAME OVER")
-    print("PLAYER_NAMES: ")
-    print(PLAYER_NAMES)
-    print("game_over_results: ")
-    print(game_over_results)
+    -- print("GAME OVER")
+    -- print("PLAYER_NAMES: ")
+    -- print(PLAYER_NAMES)
+    -- print("game_over_results: ")
+    -- print(game_over_results)
     --SceneManager:openScene(game_over_results)
     --SceneManager:openScene(test_results)
     SceneManager:openScene("score_scene", game_over_results)
@@ -576,20 +595,32 @@ end
 
 function showPointScore(player_index, amount)
     local left, top = PLAYER_LIST[player_index]:getPos()
+    local score_color
+    -- if PLAYER_ID == player_index - 1 then
+    --     score_color = string.hexToRGB( "#01FF70", true )
+    -- else
+    --     score_color = string.hexToRGB( "#FF4136", true )
+    -- end
 
-    local score_text = TextLabel {
+    score_text = TextLabel { 
         text = "+" .. amount,
         size = {cell_w, 40},
         pos = { left, cell_h },
         layer = navView,
-        color = string.hexToRGB( "#120255", true ),
+        font = "arial-rounded",
+        color = score_color,
         align = {"center", "center"}
-    }
+        }
+
+    if PLAYER_ID == player_index - 1 then
+        score_text:setColor(unpack(string.hexToRGB( "#01FF70", true )))
+    else
+        score_text:setColor(unpack(string.hexToRGB( "#FF4136", true )))
+    end
 
     local anim1 = Animation({score_text})
-        :moveLoc(0, -100, 0, 1, MOAIEaseType.EASE_OUT)
+        :moveLoc(0, -75, 0, 1, MOAIEaseType.EASE_IN)
         :moveColor(0, 0, 0, -1)
-    -- anim1:setListener(MOAIAction.EVENT_STOP, removeScoreText(score_text))
     anim1:play( { onComplete = removeScoreText(score_text) } )
 
 end

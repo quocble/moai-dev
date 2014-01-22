@@ -22,6 +22,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 PLAYER_COUNT = 2
 GAME_TIME = 30
+LOADING_DELAY = 6
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -62,7 +63,7 @@ class Game(object):
         self.players = players
         self.board = Game.makeBoard()
         self.words_play = []
-        self.game_timer = threading.Timer(GAME_TIME, self.game_over)
+        self.game_timer = threading.Timer(GAME_TIME + LOADING_DELAY + 1, self.game_over)
         self.game_timer.start()
         print ("making new game with board")
         print (self.board)
@@ -106,20 +107,42 @@ class Game(object):
         if word not in self.words_play :
             point = 10
 
+        player.total_words += 1
         player.score += point
         msg = { 'msgtype' : 'score' , 'score' : player.score, 'player_index' : self.players.index(player) , 'word' : word, 'point' : point }
 
         for p in self.players:
             p.write_message(tornado.escape.json_encode(msg))
 
+    def play_streak(self, player, streak):
+        player.streak = streak
+
+    def play_max_wlength(self, player, max_word, max_wlength):
+        player.max_word = max_word
+        player.max_wlength = max_wlength
+
     def game_over(self):
         print("notify game over")
+        highest_streak = {'name' : '', 'streak' : 0}
+        highest_word_length = {'name' : '', 'word' : '', 'max_wlength' : 0, }
+        most_words = {'name' : '', 'count' : 0}
         scores = []
-        
-        for player in self.players:
-            scores.append({'score' : player.score })
 
-        msg = { 'msgtype' : 'game_over', 'score' : scores }
+        for player in self.players:
+            if highest_streak['streak'] < player.streak:
+                highest_streak['name'] = player.name
+                highest_streak['streak'] = player.streak
+            if highest_word_length['max_wlength'] < player.max_wlength:
+                highest_word_length['name'] = player.name
+                highest_word_length['word'] = player.max_word
+                highest_word_length['max_wlength'] = player.max_wlength
+            if most_words['count'] < player.total_words:
+                most_words['name'] = player.name
+                most_words['count'] = player.total_words
+            scores.append({'name' : player.name, 'score' : player.score, 'profile_img' : player.profile_img })
+        msg = { 'msgtype' : 'game_over', 'players' : scores, 'most_words' : most_words, 
+                'longest_streak' : highest_streak, 'longest_word' : highest_word_length }
+        print(msg)
         for player in self.players:
             player.write_message(tornado.escape.json_encode(msg))
 
@@ -137,7 +160,7 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         print("client connected")
         PlayerHandler.waiters.add(self)
-        self.profile_img = 'https://s3.amazonaws.com/uifaces/faces/twitter/BillSKenney/128.jpg'
+        self.profile_img = 'http://s3.amazonaws.com/uifaces/faces/twitter/BillSKenney/128.jpg'
 
     def queue(self):
         if self in PlayerHandler.queue_players:
@@ -166,10 +189,16 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
                 
                 new_game = Game(players)    
                 PlayerHandler.games.append(new_game)
-                new_game.notify_new_game_after(6)
+                new_game.notify_new_game_after(LOADING_DELAY)
+
                 for player in players:
                     player.score = 0
+                    player.name = hex(id(player))
+                    player.max_word = ""
+                    player.streak = 0
+                    player.max_wlength = 0
                     player.current_game = new_game
+                    player.total_words = 0
 
     def leave(self):
         try:
@@ -193,6 +222,12 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
         if parsed["msgtype"] == "play":
             print("score")
             self.current_game.play_word(self, parsed["word"])
+        elif parsed["msgtype"] == "word_streak":
+            print("word_streak")
+            self.current_game.play_streak(self, parsed["count"])
+        elif parsed["msgtype"] == "max_word_length":
+            print("max_word_length")
+            self.current_game.play_max_wlength(self, parsed["word"], parsed["count"])
         elif parsed["msgtype"] == "queue":
             self.queue()
         elif parsed["msgtype"] == "leave":

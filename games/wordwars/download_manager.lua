@@ -27,13 +27,13 @@ end
 
 function M:request(path, onResponse)
 	
-	print("request " .. path)
+	--print("request " .. path)
 	
     if cache[path] == nil then
     	function onComplete(result) 
 	        local file_path = MOAIEnvironment.documentDirectory .. "/" .. MOAIEnvironment.generateGUID ()
 
-	        print("save to " .. file_path)
+	        --print("save to " .. file_path)
 
 			file = io.open ( file_path, 'wb' )
 			file:write ( result )
