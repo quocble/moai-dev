@@ -67,10 +67,10 @@ math.randomseed(os.time())
 
 function setupGame(response)
     PLAYER_ID = response["your_index"]
+    PLAYER_NAMES = response["players"]
     makeRemoteBoard(response["board"])
     makePlayers(#response["players"])
     setGameTimer(response["game_time"])
-    PLAYER_NAMES = response["players"]
 end
 
 function makeWebSocket()
@@ -390,11 +390,13 @@ function makePlayers(num_of_players)
                 }
 
         --print("cell_w " .. cell_w .. " cell_height " .. cell_h)
-        local player_image = Sprite {
-                    texture = "./assets/word_tile_default.png", 
+        local player_image = MaskSprite {
                     size  = { cell_w, cell_h },
                     parent = player_group,
                     pos = {0, 0},
+                    mask = "./assets/mask_img.png",
+                    main = "./assets/mask_img.png",
+                    border = "./assets/border_img.png"
                 }
 
         local player_score = TextLabel {
@@ -405,6 +407,12 @@ function makePlayers(num_of_players)
                     pos = {0, cell_h - 8},
                     align = {"center", "center"}
                 }
+
+        print(PLAYER_NAMES.profile_img)
+        DownloadManager:request(PLAYER_NAMES[c+1].profile_img, function(filePath)
+            print("read from " .. filePath)
+            player_image:setTexture(filePath, "main")
+        end)
 
         player_group.player_image = player_image
         player_group.player_score = player_score

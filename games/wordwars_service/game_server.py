@@ -1,22 +1,4 @@
 #!/usr/bin/env python
-#
-# Copyright 2009 Facebook
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
-"""Simplified chat demo for websockets.
-
-Authentication, error handling, etc are left as an exercise for the reader :)
-"""
 
 import logging
 import tornado.escape
@@ -45,7 +27,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
-            (r"/ws", ChatSocketHandler),
+            (r"/ws", PlayerHandler),
         ]
         settings = dict(
             cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
@@ -58,7 +40,7 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("index.html", messages=ChatSocketHandler.cache)
+        self.render("index.html", messages=PlayerHandler.cache)
 
 WORD_BAG = { 'A' : 9 , 'B' : 2, 'C' : 2, 'D' : 4, 'E' : 12, 'F' : 2, 'G' : 3,
                     'H' : 2, 'I' : 9, 'J' : 1, 'K' : 1, 'L' : 4, 'M' : 2, 'N' : 6, 
@@ -110,7 +92,7 @@ class Game(object):
         print("notify new game")
         player_obj = []
         for player in self.players:
-            player_obj.append({'player_name' : 'Name X' })
+            player_obj.append({'player_name' : 'Name X', 'profile_img': player.profile_img })
 
         for player in self.players:
             index = self.players.index(player) 
@@ -142,7 +124,7 @@ class Game(object):
             player.write_message(tornado.escape.json_encode(msg))
 
 
-class ChatSocketHandler(tornado.websocket.WebSocketHandler):
+class PlayerHandler(tornado.websocket.WebSocketHandler):
     waiters = set()
     queue_players = deque() # queue of players looking for game.
     games   = []
@@ -153,36 +135,37 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
         return True
 
     def open(self):
-        ChatSocketHandler.waiters.add(self)
+        print("client connected")
+        PlayerHandler.waiters.add(self)
         self.profile_img = 'https://s3.amazonaws.com/uifaces/faces/twitter/BillSKenney/128.jpg'
 
     def queue(self):
-        if self in ChatSocketHandler.queue_players:
+        if self in PlayerHandler.queue_players:
             print("cannot enqueue player " + hex(id(self)))
         else: 
-            ChatSocketHandler.queue_players.append(self)
-            print("add queue player " + hex(id(self)) + " total=" + str(len(ChatSocketHandler.queue_players)) + " players")
+            PlayerHandler.queue_players.append(self)
+            print("add queue player " + hex(id(self)) + " total=" + str(len(PlayerHandler.queue_players)) + " players")
 
             # notify the other players as people are joining
             all_players_in_next_game = []
-            for player in ChatSocketHandler.queue_players:
+            for player in PlayerHandler.queue_players:
                 all_players_in_next_game.append({'player_name' : 'Player ' + hex(id(player)), 'profile_img' : player.profile_img })
 
             msg = { 'msgtype' : 'player_join' , 'player' : all_players_in_next_game }
             self.write_message(msg)
 
-            for player in ChatSocketHandler.queue_players:
+            for player in PlayerHandler.queue_players:
                 if(player != self):
                     msg = { 'msgtype' : 'player_join' , 'player' : [{'player_name' : 'Player ' + hex(id(self)), 'profile_img' : self.profile_img }] }
                     player.write_message(msg)
 
             players = []
-            if len(ChatSocketHandler.queue_players) >= PLAYER_COUNT:
+            if len(PlayerHandler.queue_players) >= PLAYER_COUNT:
                 for n in range(PLAYER_COUNT):
-                    players.append(ChatSocketHandler.queue_players.popleft())
+                    players.append(PlayerHandler.queue_players.popleft())
                 
                 new_game = Game(players)    
-                ChatSocketHandler.games.append(new_game)
+                PlayerHandler.games.append(new_game)
                 new_game.notify_new_game_after(6)
                 for player in players:
                     player.score = 0
@@ -190,15 +173,15 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
     def leave(self):
         try:
-            ChatSocketHandler.queue_players.remove(self)
+            PlayerHandler.queue_players.remove(self)
             print("leave player " + hex(id(self)))
         except ValueError:
             print("exception close")
        
     def on_close(self):
         try:
-            ChatSocketHandler.waiters.remove(self)
-            ChatSocketHandler.queue_players.remove(self)
+            PlayerHandler.waiters.remove(self)
+            PlayerHandler.queue_players.remove(self)
             print("remove player " + hex(id(self)))
         except ValueError:
             print("exception close")
@@ -214,17 +197,6 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
             self.queue()
         elif parsed["msgtype"] == "leave":
             self.leave()
-
-        # chat = {
-        #     "id": str(uuid.uuid4()),
-        #     "body": parsed["body"],
-        #     }
-        # chat["html"] = tornado.escape.to_basestring(
-        #     self.render_string("message.html", message=chat))
-
-        # ChatSocketHandler.update_cache(chat)
-        # ChatSocketHandler.send_updates(chat)
-
 
 def main():
 

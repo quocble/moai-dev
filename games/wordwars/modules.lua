@@ -41,5 +41,6 @@ TMXObjectGroup          = require "hp/tmx/TMXObjectGroup"
 TMXTileset              = require "hp/tmx/TMXTileset"
 GameService				= require "game_service"
 DownloadManager			= require "download_manager"
+MaskSprite				= require "widgets/MaskSprite"
 
 return _G -- Dummy module

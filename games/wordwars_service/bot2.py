@@ -67,7 +67,7 @@ class RandomPeriodicExecutor(threading.Thread):
             time.sleep(rtime)
             apply(self.func,self.params)
 
-db = MySQLDatabase('wordwars', user='root',passwd='welcome321', host='mysql-finance.ci7tm9uowicf.us-east-1.rds.amazonaws.com')
+db = MySQLDatabase('wordwars', user='root',passwd='welcome321', host='mysql-finance.ci7tm9uowicf.us-east-1.rds.amazonaws.com', threadlocals=True)
 
 class GameBoard(peewee.Model):
     board = peewee.CharField()

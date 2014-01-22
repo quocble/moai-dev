@@ -61,9 +61,9 @@ function onCreate(params)
 
     makeNavigationBar()
     makePlaceholders()
-
-    GameService:start()
+    
     GameService:addListener(LISTENER)
+    GameService:start()
 end
 
 function makeNavigationBar()
@@ -109,28 +109,21 @@ function makePlaceholders()
             layer = layer
         }
 
-        local player_image = Sprite {
-            texture = "./assets/word_tile_default.png", 
+        local player_image = MaskSprite {
             size  = { 75, 75 },
             parent = player_group,
             pos = { (cell_w-75)/2 , (cell_w-75)/2},
+            mask = "./assets/mask_img.png",
+            main = "./assets/mask_img.png",
+            border = "./assets/border_img.png"
         }
-
-        local mask_img = Sprite {
-            texture = "./assets/mask_img.png", 
-            size  = { 75, 75 },
-            parent = player_group,
-            pos = { (cell_w-75)/2 , (cell_w-75)/2},
-        }
-
-        -- mask_img:setBlendMode(MOAIProp.GL_ONE, MOAIProp.GL_ONE_MINUS_SRC_ALPHA) 
 
         local player_name = TextLabel {
             text = "?",
             size = {cell_w, 40},
             parent = player_group,
             color = string.hexToRGB( "#000000", true ),
-            pos = {0, mask_img:getBottom() + 0 },
+            pos = {0, player_image:getBottom() + 0 },
             textSize = 13,
             align = {"center", "center"}
         }
@@ -153,7 +146,7 @@ function updatePlayers(players)
 
         DownloadManager:request(player.profile_img, function(filePath)
             print("read from " .. filePath)
-            playerViews[count+i].image:setTexture(filePath)
+            playerViews[count+i].image:setTexture(filePath, "main")
         end)
     end
 

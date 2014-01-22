@@ -44,7 +44,7 @@ function M:start()
     	ws:setListener ( MOAIWebSocket.ON_CONNECT, Listener.onConnected )
     	ws:setListener ( MOAIWebSocket.ON_CLOSE, Listener.onClosed )
     	ws:setListener ( MOAIWebSocket.ON_FAIL, Listener.onFailed )
-	    ws:start("ws://10.0.0.10:8888/ws")
+	    ws:start("ws://192.168.1.115:8888/ws")
 	    print("Opening web socket")
     end
 end
