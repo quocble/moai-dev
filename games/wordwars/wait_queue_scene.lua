@@ -50,6 +50,7 @@ end
 
 -----------------------------------------------------------------------------------
 function onBackClick()
+    buttonSound:play()
     SceneManager:closeScene()
 end
 

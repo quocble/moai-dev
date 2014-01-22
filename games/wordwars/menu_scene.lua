@@ -4,6 +4,7 @@ local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
 
 function onStartClick()
+    buttonSound:play()
     SceneManager:openScene("wait_queue_scene", { websocket = "X" , animation = "crossFade"}  )
 end
 

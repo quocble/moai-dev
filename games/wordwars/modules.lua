@@ -42,5 +42,6 @@ TMXTileset              = require "hp/tmx/TMXTileset"
 GameService				= require "game_service"
 DownloadManager			= require "download_manager"
 MaskSprite				= require "widgets/MaskSprite"
+buttonSound				= SoundManager:getSound("./assets/buttonclick.m4a", 0.25)
 
 return _G -- Dummy module
