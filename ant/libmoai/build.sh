@@ -15,7 +15,7 @@
         [disable-twitter]"
 	arm_mode="arm"
 	arm_arch="armeabi-v7a"
-	app_platform="android-10"
+	app_platform="android-17"
 	use_fmod="false"
 	use_untz="true"
 	use_luajit="true"
@@ -262,7 +262,7 @@
 	
 	# build libmoai
 	pushd jni > /dev/null
-		ndk-build $verbose
+		ndk-build NDK_DEBUG=1 APP_OPTIM=debug $verbose
 	popd > /dev/null
 
 	# remove temp files
