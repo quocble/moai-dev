@@ -78,7 +78,9 @@ end
 function M:setTextSize(points, dpi)
     self._textSizePoints = points
     self._textSizeDpi = dpi
-    MOAITextBoxInterface.setTextSize(self, points, dpi)
+    local scale = Application:getViewScale()
+    MOAITextBoxInterface.setTextSize(self, points * scale)
+    MOAITextBoxInterface.setGlyphScale(self, 1/scale)
 end
 
 --------------------------------------------------------------------------------
