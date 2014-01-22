@@ -4,6 +4,10 @@ table = require "hp/lang/table"
 array = require "hp/lang/array"
 string = require("hp/lang/string")
 
+selectSound             = SoundManager:getSound("./assets/A_select.ogg", 0.2)
+goodSound             = SoundManager:getSound("./assets/A_combo1.ogg", 0.5)
+failSound             = SoundManager:getSound("./assets/A_falsemove.ogg", 0.5)
+
 --------------------------------------------------------------------------------
 -- Const
 --------------------------------------------------------------------------------
@@ -178,7 +182,9 @@ function onTouchUp(e)
         CURRENT_WORD_LENGTH = #CurrentWordString
         updatePlayerScore()
         playStars()
+        goodSound:play()
     else
+        failSound:play()
         CURRENT_MAX_STREAK = 0
     end
 end
@@ -486,6 +492,7 @@ function updateTouchData(x, y)
                 CurrentWordString = CurrentWordString .. selected_cell.letter
                 selected_cell.used_letter = true
                 LAST_SELECTED_CELL = {col, row} -- flipped values 
+                selectSound:play()                
             end
             CurrentWord:setText(CurrentWordString)
             updateWordBox()
