@@ -6,9 +6,11 @@ local M = class()
 local listeners = {}
 local ws = nil
 local Listener = {}
+local isConnected = false
 
 function Listener.onConnected(msg)
 	print("Websocket connected.")
+	isConnected = true;
 	for i,obj in ipairs(listeners) do
 		obj.onConnected()
 	end
@@ -16,7 +18,7 @@ end
 
 function Listener.onMessageReceived(msg)
 	if msg ~= nil then
-		print("Websocket received. " .. msg)
+		-- print("Websocket received. " .. msg)
 	end
 	for i,obj in ipairs(listeners) do
 		obj.onMessageReceived(msg)
@@ -25,6 +27,8 @@ end
 
 function Listener.onClosed(msg)
 	print("Websocket closed.")
+	isConnected = false;
+
 	for i,obj in ipairs(listeners) do
 		obj.onClosed()
 	end	
@@ -47,6 +51,10 @@ function M:start()
 	    ws:start("ws://192.168.1.115:8888/ws")
 	    print("Opening web socket")
     end
+end
+
+function M:isConnected()
+	return isConnected
 end
 
 function M:write(msg)

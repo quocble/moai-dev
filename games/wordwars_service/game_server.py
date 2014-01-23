@@ -112,6 +112,8 @@ class Game(object):
         msg = { 'msgtype' : 'score' , 'score' : player.score, 'player_index' : self.players.index(player) , 'word' : word, 'point' : point }
 
         for p in self.players:
+            if p.disconnected:
+                continue            
             p.write_message(tornado.escape.json_encode(msg))
 
     def play_streak(self, player, streak):
@@ -120,6 +122,13 @@ class Game(object):
     def play_max_wlength(self, player, max_word, max_wlength):
         player.max_word = max_word
         player.max_wlength = max_wlength
+
+    def player_left(self, player):
+        player.disconnected = True  # don't remove but let everyone know he left
+        for p in self.players:
+            if p != player:
+                msg = { 'msgtype' : 'player_left' ,  'player_name' : 'Player ' + hex(id(player)) }
+                p.write_message(tornado.escape.json_encode(msg))
 
     def game_over(self):
         print("notify game over")
@@ -144,8 +153,11 @@ class Game(object):
                 'longest_streak' : highest_streak, 'longest_word' : highest_word_length }
         print(msg)
         for player in self.players:
+            if player.disconnected:
+                continue            
             player.write_message(tornado.escape.json_encode(msg))
-
+            player.current_game = None # Game do not exist anymore
+        PlayerHandler.games.remove(self)
 
 class PlayerHandler(tornado.websocket.WebSocketHandler):
     waiters = set()
@@ -199,14 +211,16 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
                     player.max_wlength = 0
                     player.current_game = new_game
                     player.total_words = 0
+                    player.disconnected = False
 
     def leave(self):
-        try:
+        if self in PlayerHandler.queue_players:
             PlayerHandler.queue_players.remove(self)
             print("leave player " + hex(id(self)))
-        except ValueError:
-            print("exception close")
-       
+
+        if self.current_game:
+            self.current_game.player_left(self)
+               
     def on_close(self):
         try:
             PlayerHandler.waiters.remove(self)

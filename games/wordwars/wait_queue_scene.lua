@@ -29,7 +29,6 @@ local A_BUTTON_STYLES = {
 -----------------------------------------------------------------------------------
 
 function LISTENER.onConnected(msg)
-    print("connected to me")
     GameService:queueGame()    
 end
 
@@ -64,7 +63,6 @@ function onCreate(params)
     makePlaceholders()
     
     GameService:addListener(LISTENER)
-    GameService:start()
 end
 
 function makeNavigationBar()
@@ -162,6 +160,11 @@ end
 
 function onResume()
     print("onResume()")
+    if GameService:isConnected() then
+        GameService:queueGame()
+    else
+        GameService:start()
+    end
 end
 
 function onPause()
