@@ -29,6 +29,7 @@ class Application(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/ws", PlayerHandler),
+            (r"/store/purchase", StorePurchaseHandler)
         ]
         settings = dict(
             cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
@@ -37,6 +38,11 @@ class Application(tornado.web.Application):
             xsrf_cookies=True,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
+
+
+class StorePurchaseHandler(tornado.web.RequestHandler):
+    def post(self):
+        token = self.get_argument('token')
 
 
 class MainHandler(tornado.web.RequestHandler):
