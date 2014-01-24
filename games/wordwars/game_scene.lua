@@ -67,9 +67,7 @@ local A_BUTTON_STYLES = {
 local YELLOW = "#ffff00"
 local GREEN = "#01FF70"
 local RED = "#FF4136"
-
-math.randomseed(os.time())
-
+local LIME = string.hexToRGB( "#01FF70", true )
 
 --------------------------------------------------------------------------------
 -- Network functions
@@ -148,7 +146,7 @@ function onCreate(params)
 end
 
 function onDestroy()
-    print("onDestroy()")
+    print("game_scene:onDestroy()")
     GameService:leaveGameAndQueue()
     GameService:removeListener(self)    
 end
@@ -158,6 +156,7 @@ end
 --------------------------------------------------------------------------------
 
 function onStart()
+    print("game_scene:onStart()")
 end
 
 function onEnterFrame()
@@ -333,7 +332,6 @@ function makeGameTimer()
         align = {"right", "center"}
         }
     GameTimer:setTextSize(15)
-    -- GameTimer:fitSize()
 end
 
 function makeLocalBoard()
@@ -442,10 +440,20 @@ function makePlayers(players)
                     align = {"center", "center"}
                 }
 
+        local player_floating_score = TextLabel { 
+            text = "",
+            size = {cell_w, 40},
+            parent = player_group,
+            pos = { 0, 0 },
+            font = "arial-rounded",
+            align = {"center", "center"}
+            }
+
         if PLAYER_ID == c then
             player_score:setColor(unpack(string.hexToRGB( "#2ECC40", true )))
         end  
 
+        player_group.player_floating_score = player_floating_score
         player_group.player_image = player_image
         player_group.player_score = player_score
         player_group:setPos(margin + (c * 80), 65)
@@ -610,19 +618,24 @@ function showGoodWord()
 end
 
 function showBadWord()
+    print("showBadWord()")
     CurrentWordBox:setColor(unpack(string.hexToRGB( RED, true )))
-    WORD_BOX_ANIM = Animation ({CurrentWordBox, CurrentWord}, 0.2)
+    WORD_BOX_ANIM = Animation ({CurrentWordBox, CurrentWord}, 0.1, MOAIEaseType.SOFT_EASE_OUT)
         :moveLoc(10, 0, 0)
         :moveLoc(-20, 0, 0)
         :moveLoc(20, 0, 0)
         :moveLoc(-10, 0, 0)
-    WORD_BOX_ANIM:play()
+    if WORD_BOX_ANIM:isRunning() == false then
+        WORD_BOX_ANIM:play()
+    end
+
 end
 
 function stopAndResetWordBox()
     if WORD_BOX_ANIM:isRunning() then
+        print("stopAndResetWordBox()")
         WORD_BOX_ANIM:stop()
-        CurrentWordBox:setPos(GAME_WIDTH,  GAME_HEIGHT - GAME_WIDTH - 40)
+        CurrentWordBox:setCenterPos(GAME_WIDTH/2,  GAME_HEIGHT - GAME_WIDTH - 40)
         CurrentWord:setPos(0,  GAME_HEIGHT - GAME_WIDTH - 60)
     end
 
@@ -634,44 +647,35 @@ end
 function showPointScore(player_index, amount)
     local left, top = PLAYER_LIST[player_index]:getPos()
     local score_color
-    -- if PLAYER_ID == player_index - 1 then
-    --     score_color = string.hexToRGB( "#01FF70", true )
-    -- else
-    --     score_color = string.hexToRGB( "#FF4136", true )
-    -- end
-
-    score_text = TextLabel { 
-        text = "+" .. amount,
-        size = {cell_w, 40},
-        pos = { left, cell_h },
-        layer = navView,
-        font = "arial-rounded",
-        color = score_color,
-        align = {"center", "center"}
-        }
+    PLAYER_LIST[player_index].player_floating_score:setText("+" .. amount)
 
     if PLAYER_ID == player_index - 1 then
-        score_text:setColor(unpack(string.hexToRGB( "#01FF70", true )))
+        score_color = LIME
     else
-        score_text:setColor(unpack(string.hexToRGB( "#FF4136", true )))
+        score_color = string.hexToRGB( RED, true )
     end
 
-    local anim1 = Animation({score_text})
+    PLAYER_LIST[player_index].player_floating_score:setColor(unpack(score_color))
+
+    if PLAYER_ID == player_index - 1 then
+        PLAYER_LIST[player_index].player_floating_score:setColor(unpack(string.hexToRGB( "#01FF70", true )))
+    else
+        PLAYER_LIST[player_index].player_floating_score:setColor(unpack(string.hexToRGB( "#FF4136", true )))
+    end
+
+    local anim1 = Animation({PLAYER_LIST[player_index].player_floating_score})
+        :fadeIn()
         :seekScl(1.2, 1.2, 1.2, 0.1, MOAIEaseType.SMOOTH)
         :seekScl(1.0, 1.0, 1.0, 0.2, MOAIEaseType.SMOOTH)
         --:moveLoc(0, -75, 0, 1, MOAIEaseType.EASE_IN)
         :moveColor(0, 0, 0, -1)
-    anim1:play( { onComplete = removeScoreText(score_text) } )
+    anim1:play( { } )
 
 end
 
-function removeScoreText(score_text)
-    local x, y = score_text:getLoc()
-    if y < 0 then
-        guiView:removeProp(score_text)
-        score_text = nil
-    end
-end 
+function fadeOutScoreText(score_text)
+    score_text:fadeOut()
+end
 
 function setGameTimer(time_in_sec)
     print(time_in_sec)

@@ -87,7 +87,13 @@ class Game(object):
             print("no board")
  
     def notify_new_game_after(self, time):
+        self.notify_countdown_timer(LOADING_DELAY)
         threading.Timer(time, self.notify_new_game).start()
+
+    def notify_countdown_timer(self, time):
+        for player in self.players:
+            msg = { 'msgtype' : 'countdown', 'time' : LOADING_DELAY }
+            player.write_message(tornado.escape.json_encode(msg))
 
     def notify_new_game(self):
         print("notify new game")
@@ -196,6 +202,7 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
 
             players = []
             if len(PlayerHandler.queue_players) >= PLAYER_COUNT:
+
                 for n in range(PLAYER_COUNT):
                     players.append(PlayerHandler.queue_players.popleft())
                 
