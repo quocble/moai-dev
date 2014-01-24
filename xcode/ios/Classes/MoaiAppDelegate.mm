@@ -55,7 +55,7 @@
 	//----------------------------------------------------------------//
 	-( BOOL ) application:( UIApplication* )application didFinishLaunchingWithOptions:( NSDictionary* )launchOptions {
 		
-		[ application setStatusBarHidden:true ];
+		[ application setStatusBarHidden: YES ];
 		
 		mMoaiView = [[ MoaiView alloc ] initWithFrame:[ UIScreen mainScreen ].bounds ];
 		[ mMoaiView setUserInteractionEnabled:YES ];

@@ -1,28 +1,50 @@
--- GREGORY TASKS
+-- GREGORY TASKS ---------------
 --------------------------------
     -- Game Scene
-      -- if not good word Glow / shake 
-      -- if good word, calculate score (happy dance)
-      -- load HTTP URL image (done)
-      -- masking image into a circle
+      -- if not good word Glow / shake  (scrambler)
+      -- Combo number   (scrambler)
+      -- if good word, calculate score (happy dance) (scrambler)
     -- Result scene
-      -- circlular mask of profile images
       -- added word length cap to names 
-        -- need to figure out solution for wider resolution, iphone is ok
+    -- game countdown 3 - 2 - 1 - go  ()
+    -- integrate powerups
+      -- blackout
+      -- wildcard
+      -- shuffle
+    -- back button > main menu
 
-
--- QUOC TASKS
+-- QUOC TASKS ------------------
 --------------------------------
     -- Login Scene
         -- facebook integration (next)
         -- service call to store in db
         -- web socket server query data
-    -- Waiting Scene
     -- Android build
+    -- Virtual currency (server)
+      -- debit for powerups
+    -- Store purchasing
+    -- Android developer account (PAID)
+    
+-- UNASSIGNED TASKS ------------
+--------------------------------
 
+  - Intro tutorial
+  - Settings
+    - Disable music
+    - Disable sound
+    - Help
+    - About
+  - Deploy to amazon
+    - Load Test / Memory Test
+  - Analytics
+  - Store user preferences / profile
+  
 --------- COMPLETED ------------
 --------------------------------
 
+-- need to figure out solution for wider resolution, iphone is ok
+-- load HTTP URL image (done)
+   -- masking image into a circle
 -- Build words above the board as user drag. (done)
    -- check against dictionary  (done)
 -- python build bot (done)
@@ -49,9 +71,5 @@
 -- fixed game timer layout for android/ios (done)
 -- fixed issue with name value from server when going to score_scene
 -- prevent cheating through dead area / lower priority (done)
+-- circlular mask of profile images
 
-
--- back button > main menu
--- integrate powerups
-    -- blackout
-    -- wildcard
