@@ -35,7 +35,7 @@ local LAST_TIMESTAMP = 0
 local CurrentWord = ""
 local PLAYER_NAMES = { }
 local LAST_SELECTED_CELL = { }
-
+local WORD_BOX_ANIM = Animation()
 local SENT_BAD_WORD = false
 local CURRENT_MAX_STREAK = 0
 local ALL_TIME_MAX_STREAK = 0
@@ -61,6 +61,12 @@ local A_BUTTON_STYLES = {
         skin = "./assets/btn_down.png",
     },
 }
+--------------------------------------------------------------------------------
+-- Colors
+--------------------------------------------------------------------------------
+local YELLOW = "#ffff00"
+local GREEN = "#01FF70"
+local RED = "#FF4136"
 
 math.randomseed(os.time())
 
@@ -163,7 +169,9 @@ function onTouchDown(e)
     e.x = e.x / scale
     e.y = e.y / scale
     CurrentWordString = ""
+    CurrentWordBox:setColor(unpack(string.hexToRGB(YELLOW, true)))
     clearSelectedLetters()
+    stopAndResetWordBox()
     LAST_SELECTED_CELL = {math.ceil(e.x / cell_w), math.ceil((e.y - (GAME_HEIGHT - GAME_WIDTH)) / cell_h)}
     updateTouchData(e.x, e.y)
 end
@@ -182,8 +190,10 @@ function onTouchUp(e)
         CURRENT_WORD_LENGTH = #CurrentWordString
         updatePlayerScore()
         playStars()
+        showGoodWord()
         goodSound:play()
     else
+        showBadWord()
         failSound:play()
         CURRENT_MAX_STREAK = 0
     end
@@ -501,10 +511,6 @@ function updateTouchData(x, y)
             sprite.touching = true
 
             resetScale(sprite, false)
-        else
-            print("row_old: " .. col .. " row_old: " .. LAST_SELECTED_CELL[2])
-            print("col_new: " .. row .. " col_old: " .. LAST_SELECTED_CELL[1])            
-            print("dist_x: ".. cell_dist_x .. " dist_y: " .. cell_dist_y)
         end
     end
 end
@@ -591,13 +597,6 @@ function isGameOver()
 end
 
 function gameOver(game_over_results)
-    -- print("GAME OVER")
-    -- print("PLAYER_NAMES: ")
-    -- print(PLAYER_NAMES)
-    -- print("game_over_results: ")
-    -- print(game_over_results)
-    --SceneManager:openScene(game_over_results)
-    --SceneManager:openScene(test_results)
     SceneManager:openScene("score_scene", game_over_results)
 
 end
@@ -606,7 +605,28 @@ end
 -- Common logic
 --------------------------------------------------------------------------------
 
+function showGoodWord()
+    CurrentWordBox:setColor(unpack(string.hexToRGB( GREEN, true )))
+end
 
+function showBadWord()
+    CurrentWordBox:setColor(unpack(string.hexToRGB( RED, true )))
+    WORD_BOX_ANIM = Animation ({CurrentWordBox, CurrentWord}, 0.2)
+        :moveLoc(10, 0, 0)
+        :moveLoc(-20, 0, 0)
+        :moveLoc(20, 0, 0)
+        :moveLoc(-10, 0, 0)
+    WORD_BOX_ANIM:play()
+end
+
+function stopAndResetWordBox()
+    if WORD_BOX_ANIM:isRunning() then
+        WORD_BOX_ANIM:stop()
+        CurrentWordBox:setPos(GAME_WIDTH,  GAME_HEIGHT - GAME_WIDTH - 40)
+        CurrentWord:setPos(0,  GAME_HEIGHT - GAME_WIDTH - 60)
+    end
+
+end
 --------------------------------------------------------------------------------
 -- Scoring / Time functions
 --------------------------------------------------------------------------------
@@ -637,7 +657,9 @@ function showPointScore(player_index, amount)
     end
 
     local anim1 = Animation({score_text})
-        :moveLoc(0, -75, 0, 1, MOAIEaseType.EASE_IN)
+        :seekScl(1.2, 1.2, 1.2, 0.1, MOAIEaseType.SMOOTH)
+        :seekScl(1.0, 1.0, 1.0, 0.2, MOAIEaseType.SMOOTH)
+        --:moveLoc(0, -75, 0, 1, MOAIEaseType.EASE_IN)
         :moveColor(0, 0, 0, -1)
     anim1:play( { onComplete = removeScoreText(score_text) } )
 
