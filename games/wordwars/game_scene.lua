@@ -4,7 +4,7 @@ table = require "hp/lang/table"
 array = require "hp/lang/array"
 string = require("hp/lang/string")
 
-selectSound             = SoundManager:getSound("./assets/A_select.ogg", 0.2)
+selectSound             = SoundManager:getSound("./assets/A_select.ogg", 0.1)
 goodSound             = SoundManager:getSound("./assets/A_combo1.caf", 0.5)
 failSound             = SoundManager:getSound("./assets/A_falsemove.ogg", 0.5)
 
@@ -99,7 +99,7 @@ end
 local WS_LISTENER = {}
 
 function WS_LISTENER.onMessageReceived( msg ) 
-    print("WebSocket: " .. msg )
+    --print("WebSocket: " .. msg )
     response = MOAIJsonParser.decode ( msg )
     if response["msgtype"] == "score" then
         if PLAYER_ID == response["player_index"] then

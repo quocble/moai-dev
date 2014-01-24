@@ -3,6 +3,24 @@ module(..., package.seeall)
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
 
+local A_BUTTON_STYLES = {
+    normal = {
+        skin = "./assets/main_btn.png",
+        skinColor = {1, 1, 1, 1.0},
+    },
+    selected = {
+        skin = "./assets/main_btn.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    over = {
+        skin = "./assets/main_btn.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    disabled = {
+        skin = "./assets/main_btn.png",
+    },
+}
+
 function onStartClick()
     buttonSound:play()
     SceneManager:openScene("wait_queue_scene", { websocket = "X" , animation = "crossFade"}  )
@@ -16,45 +34,56 @@ function onCreate(params)
     local w, h = 526/2, 146/2
 
     sprite1 = Sprite {
+        texture = "./assets/menu_bg.png", 
+        layer = layer,
+        size = { GAME_WIDTH , GAME_HEIGHT } ,
+        pos = { 0, 0 }
+    }    
+
+    sprite1 = Sprite {
         texture = "./assets/game_title.png", 
         layer = layer,
         size = { w , h } ,
-        pos = { (GAME_WIDTH - w) / 2 , 80 }
+        pos = { (GAME_WIDTH - w) / 2 , 50 }
     }    
 
-    -- anim2 = Animation():loop(0, 
-    --     Animation({sprite1}, 0.80, MOAIEaseType.SMOOTH):moveLoc(10, 0, 0):moveLoc(-10, 0, 0))
-    -- anim2:play()
+    playButton = Button {
+        name = "startButton",
+        text = "Play",
+        onClick = onStartClick,
+        size = { 155, 45},
+        styles = { A_BUTTON_STYLES }
+    }
 
     view = View {
         scene = scene,
-        pos = {0, 50},
+        pos = {0, -50},
         layout = {
             VBoxLayout {
                 align = {"center", "center"},
-                padding = {10, 10, 10, 30},
+                padding = {0, 0, 0, 0},
             }
         },
         children = {{
-            Button {
-                name = "startButton",
-                text = "Play",
-                onClick = onStartClick,
-                size = { 175, 55}
-            },
-            Button {
-                name = "backButton",
-                text = "Invite",
-                onClick = onBackClick,
-                size = { 175, 55}
-            },
-            Button {
-                name = "testButton1",
-                text = "Help",
-                size = { 175, 55}
-            },
+            playButton,
+            -- Button {
+            --     name = "backButton",
+            --     text = "Invite",
+            --     onClick = onBackClick,
+            --     size = { 175, 55}
+            -- },
+            -- Button {
+            --     name = "testButton1",
+            --     text = "Help",
+            --     size = { 175, 55}
+            -- },
         }},
     }
+
+    playButton:setCenterPiv()
+    anim2 = Animation():loop(0, 
+        Animation({ playButton }):seekScl(1.02, 1.02, 1, 1.5, MOAIEaseType.SOFT_SMOOTH):wait(0.25):seekScl(1, 1, 1, 1.5, MOAIEaseType.SOFT_SMOOTH))
+    anim2:play()
 
 end
 
@@ -76,16 +105,4 @@ end
 
 function onDestroy()
     print("onDestroy()")
-end
-
-function onTouchDown(event)
-    print("onTouchDown(event)")
-end
-
-function onTouchUp(event)
-    print("onTouchUp(event)")
-end
-
-function onTouchMove(event)
-    print("onTouchMove(event)")
 end
