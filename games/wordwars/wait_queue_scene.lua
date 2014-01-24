@@ -4,6 +4,9 @@ string = require("hp/lang/string")
 
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
+local START_TIMER = 0
+local COUNTDOWN_STARTED = false
+local LAST_TIMESTAMP = 0
 local LISTENER = {}
 local playerViews = {}
 local allPlayers = {}
@@ -38,6 +41,8 @@ function LISTENER.onMessageReceived(msg)
         updatePlayers(response["player"])
     elseif response["msgtype"] == 'new' then 
         startGame(response)
+    elseif response["msgtype"] == 'countdown' then
+        startCountDown(response['time'])
     end
 end
 
@@ -54,6 +59,7 @@ function onBackClick()
 end
 
 function onCreate(params)
+    print("wait_queue_scene:onCreate()")
     layer = Layer {scene = scene}
     local floor = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {"#CB44F3", "#8FC7CB", 90})
     floor:setLayer(layer)
@@ -61,6 +67,7 @@ function onCreate(params)
 
     makeNavigationBar()
     makePlaceholders()
+    makeStartTimer()
     
     GameService:addListener(LISTENER)
 end
@@ -83,7 +90,7 @@ function makeNavigationBar()
         styles = { A_BUTTON_STYLES }
     }    
     titleLabel = TextLabel {
-        text = "Finding Players",
+        text = "Search",
         size = {GAME_WIDTH, 40},
         pos = { 0, 15 },
         layer = layer,
@@ -135,6 +142,45 @@ function makePlaceholders()
     end
 end
 
+function makeStartTimer()
+    StartTimer = TextLabel {
+    text = "Searching for more players...",
+    size = {GAME_WIDTH, 50},
+    pos = {0,  70},
+    parent = guiView,
+    align = {"center", "center"},
+    font = "arial-rounded",
+    color = string.hexToRGB( "#FFFFFF", true ),
+    }
+    StartTimer:setTextSize(24)
+end
+
+function startCountDown(time) 
+    START_TIMER = time
+    COUNTDOWN_STARTED = true
+end
+
+function updateStartTimer()
+    local step = 0
+    if LAST_TIMESTAMP ~= 0 then
+        step = MOAISim.getDeviceTime() - LAST_TIMESTAMP
+    end
+    if START_TIMER >= 0 then
+        local min = math.floor(START_TIMER / 60)
+        local sec = math.floor(START_TIMER % 60)
+        if (math.floor(START_TIMER) - math.floor(START_TIMER - step)) >= 1 then
+            if sec == 1 then
+                StartTimer:setText("Starting in " .. sec .. " second")
+            else
+                StartTimer:setText("Starting in " .. sec .. " seconds")
+            end
+        end
+
+        START_TIMER = START_TIMER - step
+    end
+    LAST_TIMESTAMP = MOAISim.getDeviceTime()
+end
+
 function updatePlayers(players)
     print("updating players " .. #players)    
     count = #allPlayers
@@ -160,10 +206,17 @@ end
 
 function onResume()
     print("onResume()")
+    allPlayers = { }
     if GameService:isConnected() then
         GameService:queueGame()
     else
         GameService:start()
+    end
+end
+
+function onEnterFrame()
+    if COUNTDOWN_STARTED then
+        updateStartTimer()
     end
 end
 
