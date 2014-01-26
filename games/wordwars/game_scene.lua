@@ -38,6 +38,7 @@ local LAST_SELECTED_CELL = { }
 local WORD_BOX_ANIM = Animation()
 local SENT_BAD_WORD = false
 local CURRENT_MAX_STREAK = 0
+local BLACKED_OUT_TILES = { }
 local ALL_TIME_MAX_STREAK = 0
 
 local CURRENT_WORD_LENGTH = 0
@@ -70,6 +71,7 @@ color.GREEN = string.hexToRGB("2ECC40", true)
 color.RED = string.hexToRGB( "#FF4136", true)
 color.LIME = string.hexToRGB( "#01FF70", true )
 color.BLUE = string.hexToRGB("#0074D9", true)
+color.BLACK = string.hexToRGB("#111111", true)
 
 --------------------------------------------------------------------------------
 -- Network functions
@@ -109,7 +111,9 @@ function WS_LISTENER.onMessageReceived( msg )
             PLAYER_LIST[response["player_index"]+1].player_score:setText("" .. response["score"])
             showPointScore(response["player_index"], response["point"])
     elseif response["msgtype"] == "game_over" then
-        gameOver(response) 
+        gameOver(response)
+    elseif response["msgtype"] == "power_up" then
+        execPowerUp(response)
     end
 end
 
@@ -142,6 +146,7 @@ function onCreate(params)
     makeStreakBox()
     makePlayerScore()
     loadParticles()
+
 
     -- makeGameTimer()
     -- makePlayers(4)
@@ -283,9 +288,10 @@ function makeLetter(p, c, r)
         color = string.hexToRGB( "#4C5659", true ),
         align = {"center", "center"}
     }
-
+    -- sprite1:setVisible(false)
     sprite1.touching = false 
     p["sprite"] = sprite1
+    p["levelLabel"] = levelLabel
 
 end
 
@@ -380,6 +386,8 @@ function makeRemoteBoard(data)
             makeLetter(p, c, r)
         end
     end
+    -- local tile_to_blackout = { row = 1, col = 1}
+    -- blackOutTile(tile_to_blackout)
 end
 
 function makeWordBox()
@@ -505,8 +513,7 @@ function updateTouchData(x, y)
     margin = 10
 
     smaller_rect = { x = ideal_x+margin, y = ideal_y + margin, width = cell_w - (2*margin), height = cell_h - (2*margin) }
-    --print("x: " .. x .. "y: " .. y)
-    --print("xbox " .. smaller_rect['x'] .. " ybox " .. smaller_rect['y'] .. " width " .. smaller_rect['width'] .. " height " .. smaller_rect['height'])
+    
     local isInSmallerRect = false
     if x >= smaller_rect['x'] and y >= smaller_rect['y']
         and x <= smaller_rect['x'] + smaller_rect['width']
@@ -514,9 +521,23 @@ function updateTouchData(x, y)
         isInSmallerRect = true
     end
 
-    if col >= 1 and col <= BOARD_SIZE["width"] and
+    local tile_loc = { r = row, c = col }
+    local isNotInBlackedOutTile = true
+    -- if tile_loc in BLACKED_OUT_TILES then
+--    printTable(BLACKED_OUT_TILES)
+    for i=1, #BLACKED_OUT_TILES do
+        -- print("index: " .. i)
+        -- print("row: " .. tile_loc['r'] .. " col: " .. tile_loc['c'])
+        -- print("rowCheck: " .. BLACKED_OUT_TILES[i]['row'] .. " colCheck: " .. BLACKED_OUT_TILES[i]['col'])
+        if tile_loc['r'] == BLACKED_OUT_TILES[i]['row'] and 
+            tile_loc['c'] == BLACKED_OUT_TILES[i]['col'] then
+            isNotInBlackedOutTile = false
+        end
+    end
+
+    if col >= 1 and col <= BOARD_SIZE["width"] and isNotInBlackedOutTile and 
         row >= 1 and row <= BOARD_SIZE["height"] and isInSmallerRect then
-        
+
         local selected_cell = GameBoard[row][col]
         local sprite = selected_cell["sprite"]
         local cell_dist_x = math.abs(row - LAST_SELECTED_CELL[2])
@@ -556,6 +577,9 @@ function clearSelectedLetters()
 end
 
 function checkWord()
+    if #CurrentWordString <= 1 then
+        return false
+    end
     if DICTIONARY[CurrentWordString] ~= nil then
         print(CurrentWordString)
         return true
@@ -566,8 +590,7 @@ end
 function updatePlayerScore()
     if PLAYER_WORDS[CurrentWordString] == nil then
         PLAYER_WORDS[CurrentWordString] = true
-        --PLAYER_SCORE = PLAYER_SCORE + letter_length ^ 2 -- word score = word length^2
-        --PlayerScore:setText("SCORE: " .. PLAYER_SCORE)
+
         local send_word_to_server = { msgtype = "play", word = CurrentWordString }
         local msg = MOAIJsonParser.encode ( send_word_to_server )
         print(msg)
@@ -627,6 +650,62 @@ end
 function gameOver(game_over_results)
     SceneManager:openScene("score_scene", game_over_results)
 
+end
+
+--------------------------------------------------------------------------------
+-- POWER UPS
+--------------------------------------------------------------------------------
+
+function execPowerUp(response)
+    local power_up = { }
+    power_up.type = response['power_up_type']
+    power_up.player = response['player_index']
+    print(power_up.type .. " " .. power_up.player)
+    if power_up_type == 'blackout' then
+        power_up.tile = response['tile']
+        blackOutTile(power_up.tile.row, power_up_tile.col)
+
+    elseif power_up_type == 'double_point' then
+        power_up.letter = response['letter']
+        -- TODO
+        -- Change letter display value
+    elseif power_up_type == 'shuffle' then
+        power_up.new_game_board = response['new_game_board']
+        -- TODO
+        -- Destroy old board
+        -- Recreate new board
+    elseif power_up_type == 'swap' then
+        power_up.tiles = response['tiles']
+
+    elseif power_up_type == 'timer_boost' then
+        power_up.new_time = response['new_time']
+        -- TODO
+        -- Update game timer
+    end
+end
+
+function blackOutTile(tile_loc)
+    local tile = { row = tile_loc['row'], col = tile_loc['col'] }
+    table.insert(BLACKED_OUT_TILES, tile)
+    GameBoard[tile['row']][tile['col']]["sprite"]:setColor(unpack(color.BLACK))
+end
+
+function swapTiles(tile_1, tile_2)
+    local tile_1_pos_x, tile_1_pos_y = GameBoard[tile_1['row']][tile_1['col']]['levelLabel']:getPos()
+    local tile_2_pos_x, tile_2_pos_y = GameBoard[tile_2['row']][tile_2['col']]['levelLabel']:getPos()
+    GameBoard[tile_1['row']][tile_1['col']]['levelLabel']:setPos(tile_2_pos_x, tile_2_pos_y)
+    GameBoard[tile_2['row']][tile_2['col']]['levelLabel']:setPos(tile_1_pos_x, tile_1_pos_y)
+    print(tile_1_pos_x .. tile_1_pos_y)
+    print(tile_2_pos_x .. tile_2_pos_y)
+
+    local tile_1_pos_x, tile_1_pos_y = GameBoard[tile_1['row']][tile_1['col']]['sprite']:getPos()
+    local tile_2_pos_x, tile_2_pos_y = GameBoard[tile_2['row']][tile_2['col']]['sprite']:getPos()
+    GameBoard[tile_1['row']][tile_1['col']]['sprite']:setPos(tile_2_pos_x, tile_2_pos_y)
+    GameBoard[tile_2['row']][tile_2['col']]['sprite']:setPos(tile_1_pos_x, tile_1_pos_y)    
+
+
+    GameBoard[tile_1['row']][tile_1['col']], GameBoard[tile_2['row']][tile_2['col']] = 
+        GameBoard[tile_2['row']][tile_2['col']], GameBoard[tile_1['row']][tile_1['col']]
 end
 
 --------------------------------------------------------------------------------
@@ -693,6 +772,50 @@ end
 function setGameTimer(time_in_sec)
     print(time_in_sec)
     GAME_TIME_SEC = time_in_sec
+end
+
+function printTable ( t, tableName, indentationLevel )
+        
+    if type ( t ) ~= "table" then
+        print ( "WARNING: printTable received \"" .. type ( t ) .. "\" instead of table. Skipping." )
+        return
+    end
+    
+    local topLevel = false
+    
+    if ( not tableName ) and ( not indentationLevel ) then
+        
+        topLevel = true
+        indentationLevel = 1
+        
+        print ( "\n----------------------------------------------------------------" )
+        print ( tostring ( t ) .. "\n" )
+    else
+        print ( "\n" .. string.rep ( "\t", indentationLevel - 1 ) .. tableName .. " = {" )
+    end
+    
+    if t then
+        for k,v in pairs ( t ) do
+            
+            if ( type ( v ) == "table" ) then 
+                
+                printTable ( v, tostring ( k ), indentationLevel + 1 )
+                
+            elseif ( type ( v ) == "string" ) then
+                
+                print ( string.rep ( "\t", indentationLevel ) .. tostring ( k ) .. " = \"" .. tostring ( v ) .. "\"," )
+            else
+            
+                print ( string.rep ( "\t", indentationLevel ) .. tostring ( k ) .. " = " .. tostring ( v ) .. "," )
+            end
+        end
+    end
+    
+    if topLevel then
+        print ( "\n----------------------------------------------------------------\n" )
+    else
+        print ( string.rep ( "\t", indentationLevel - 1 ) .. "},\n" )
+    end
 end
 
 

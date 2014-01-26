@@ -14,6 +14,7 @@ from peewee import *
 import json 
 import sys
 import threading
+import time
 
 from collections import deque
 from tornado.options import define, options
@@ -22,7 +23,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 PLAYER_COUNT = 2
 GAME_TIME = 30
-LOADING_DELAY = 6
+LOADING_DELAY = 1
 GLOBAL_WORDS_PLAYED = []
 GLOBAL_DEAD_WORDS = []
 LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
@@ -87,6 +88,7 @@ class Game(object):
         self.board = Game.makeBoard()
         self.player_words_played = []
         self.game_timer = threading.Timer(GAME_TIME + LOADING_DELAY + 1, self.game_over)
+        self.system_clock_old_timestamp = 0
         self.game_timer.start()
         print ("making new game with board")
         print (self.board)
@@ -131,6 +133,7 @@ class Game(object):
     def notify_new_game(self):
         print("notify new game")
         player_obj = []
+        self.system_clock_old_timestamp = int(time.time())
         for player in self.players:
             player_obj.append({'player_name' : 'Name X', 'profile_img': player.profile_img })
 
@@ -171,12 +174,60 @@ class Game(object):
         player.max_word = max_word
         player.max_wlength = max_wlength
 
+    # self.current_game.play_power_up(self, parsed["power_up_type"], parsed["tile_loc"])
+    def play_power_up(self, player, pu_type, pu_params):
+        msg = { 'msgtype' : 'power_up', 'player_index' : self.players.index(play) }
+        if pu_type == "blackout":
+            print("POWER UP: blackout")
+            msg['power_up_type'] = 'blackout'
+            msg['tile'] = pu_params.tile
+
+        elif pu_type == "double_point":
+            print("POWER UP: double point")
+            msg['power_up_type'] = 'double_point'            
+            msg['letter'] = pu_params.letter
+            LETTER_POINT_VALUES[pu_params.letter] = LETTER_POINT_VALUES[pu_params.letter] * 2
+
+        elif pu_type == "shuffle":
+            print("POWER UP: shuffle tiles")
+            msg['power_up_type'] = 'shuffle'
+            new_board = Game.makeBoard()
+            self.board.board = new_board.board
+            msg['new_game_board'] = list(new_board.board)
+
+        elif pu_type == "swap": 
+            print("POWER UP: swap tiles")
+            msg['power_up_type'] = 'swap_tiles'
+            msg['tiles'] = pu_params.tiles
+            #TODO
+            # swap tiles in pu_param.tiles
+
+        elif pu_type == "timer_boost":
+            print("POWER UP: timer boost")
+            msg['power_up_type'] = 'timer_boost'
+            time_remaining = int(time.time()) - self.system_clock_old_timestamp
+            system_clock_old_timestamp = int(time.time())
+            new_time = time_remaining + 60
+            self.game_timer = threading.Timer(new_time, self.game_over)
+            msg['new_time'] = new_time
+
+        for p in self.players:
+            if p.disconnected:
+                continue
+            p.write_message(tornado.escape.json_encode(msg))
+
     def player_left(self, player):
         player.disconnected = True  # don't remove but let everyone know he left
         for p in self.players:
             if p != player:
                 msg = { 'msgtype' : 'player_left' ,  'player_name' : 'Player ' + hex(id(player)) }
                 p.write_message(tornado.escape.json_encode(msg))
+
+    def reset_letter_point_values():
+        LETTER_POINT_VALUES = { 'A' : 1, 'B' : 3, 'C' : 3, 'D' : 2, 'E' : 1, 'F' : 4, 'G' : 2, 'H' : 4, 
+                    'I' : 1, 'J' : 8, 'K' : 5, 'L' : 1, 'M' : 3, 'N' : 1, 'O' : 1, 'P' : 3,
+                    'Q' : 10, 'R' : 1, 'S' : 1, 'T' : 1, 'U' : 1, 'V' : 4, 'W' : 4, 'X' : 8,
+                    'Y' : 4, 'Z' : 10 }
 
     def game_over(self):
         print("notify game over")
@@ -186,6 +237,7 @@ class Game(object):
         scores = []
         GLOBAL_WORDS_PLAYED = []
         GLOBAL_DEAD_WORDS = []
+        self.reset_letter_point_values()
 
         for player in self.players:
             if highest_streak['streak'] < player.streak:
@@ -294,6 +346,9 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
         elif parsed["msgtype"] == "max_word_length":
             print("max_word_length")
             self.current_game.play_max_wlength(self, parsed["word"], parsed["count"])
+        elif parsed["msgtype"] == "power_up":
+            print("power_up " + "type=" + parsed["power_up_type"] + " params" + parsed["params"])
+            self.current_game.play_power_up(self, parsed["power_up_type"], parsed["params"])
         elif parsed["msgtype"] == "queue":
             self.queue()
         elif parsed["msgtype"] == "leave":
