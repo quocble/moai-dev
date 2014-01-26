@@ -40,8 +40,8 @@
 # you must define key store data in order to build for release
 #----------------------------------------------------------------#
 
-	debug=true
-	key_store=
-	key_alias=
-	key_store_password=
-	key_alias_password=
+	debug=false
+	key_store=worddash.keystore
+	key_alias=worddash
+	key_store_password=world123
+	key_alias_password=world123

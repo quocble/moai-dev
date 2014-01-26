@@ -53,6 +53,86 @@ local BUY_BUTTON_STYLE = {
         skin = "./assets/buy_btn.png",
     },
 }
+
+---------------------- ANDROID STORE ----------------------------
+print("Starting up on:" .. MOAIEnvironment.osBrand  .. " version:" .. MOAIEnvironment.osVersion)
+-- if MOAIEnvironment.osBrand == MOAIEnvironment.OS_BRAND_ANDROID then
+    print("ANDROID!! ")
+
+    function onBillingSupported ( supported )
+        print ( "onBillingSupported: " )
+        if ( supported ) then
+            print ( "billing is supported" )
+            billing_supported = true
+        else
+            print ( "billing is not supported" )
+        end
+    end
+
+    function onPurchaseResponseReceived ( code, id )
+        print ( "onPurchaseResponseReceived: " .. id )
+        if ( code == MOAIBilling.BILLING_RESULT_SUCCESS ) then
+            print ( "purchase request received" )
+        elseif ( code == MOAIBilling.BILLING_RESULT_USER_CANCELED ) then
+            print ( "user canceled purchase" )
+        else
+            print ( "purchase failed" )
+        end
+    end
+
+    function onPurchaseStateChanged ( code, id, order, user, notification, payload )
+        print ( "onPurchaseStateChanged: " .. id )
+        if ( code == MOAIBilling.BILLING_PURCHASE_STATE_ITEM_PURCHASED ) then
+            print ( "item has been purchased" )
+        elseif ( code == MOAIBilling.BILLING_PURCHASE_STATE_ITEM_REFUNDED ) then
+            print ( "item has been refunded" )
+        else
+            print ( "purchase was canceled" )
+        end
+        if ( notification ~= nil ) then
+            if MOAIBilling.confirmNotification ( notification ) ~= true then
+                print ( "failed to confirm notification" )
+            end
+        end
+    end
+
+    function onRestoreResponseReceived ( code, more, offset )
+        print ( "onRestoreResponseReceived: " )
+        if ( code == MOAIBilling.BILLING_RESULT_SUCCESS ) then
+            print ( "restore request received" )    
+            if ( more ) then
+                MOAIBilling.restoreTransactions ( offset )
+            end
+        else
+            print ( "restore request failed" )
+        end
+    end
+
+    MOAIBilling.setListener ( MOAIBilling.CHECK_BILLING_SUPPORTED, onBillingSupported )
+    MOAIBilling.setListener ( MOAIBilling.PURCHASE_RESPONSE_RECEIVED, onPurchaseResponseReceived )
+    MOAIBilling.setListener ( MOAIBilling.PURCHASE_STATE_CHANGED, onPurchaseStateChanged )
+    MOAIBilling.setListener ( MOAIBilling.RESTORE_RESPONSE_RECEIVED, onRestoreResponseReceived )
+
+    MOAIBilling.setPublicKey ( "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsiXcz6BfQ+OKev9n+pthQK6gqG+NeE38T/EI3MzHcC64prD+NhjLl+z1fd0y0BbnKAemzGu9JEaCJpX83Me+kbwwGRdy1OxkjtaLcB/d8/GAfftdTrjuZFZlTrw/CU5hB0tvbkjVADrh6iOjBOx+KOEiQz2dV2e1kxUNYzTi1i9aoWt/s5X/j8WuLD1gP8Fe2TEpTHlZMMmT/LjEXeSayv8ckpenkUSpPY7dhRNxXGuz7U97duCw2ujWupNjc6unpeFloVIWs0oG8giXgwsMvOZ19P2iujFTtt4lAEvNNUlTfdNhOpaLJ/JMU8368SoUlW+CPfvH/oFzg8d7yyNk2QIDAQAB" )
+
+    if not MOAIBilling.setBillingProvider ( MOAIBilling.BILLING_PROVIDER_GOOGLE ) then
+        print ( "unable to set billing provider" )
+    else
+        if not MOAIBilling.checkBillingSupported () then
+            print ( "check billing supported failed" )
+        end
+    end
+--end
+-----------------------------------------------------------------
+
+function onBuyButton()
+    if MOAIBilling.requestPurchase ( 'gold_1', '' ) then
+        print ( "purchase successfully requested" )
+    else
+        print ( "requesting purchase failed" )
+    end
+end
+
 function M:getPanel(onBackClick) 
 	local panel = Panel {
 	    name = "panel",
