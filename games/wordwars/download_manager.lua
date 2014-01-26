@@ -38,6 +38,9 @@ function M:request(path, onResponse)
 	        local file_path = MOAIEnvironment.documentDirectory .. "/" .. MOAIEnvironment.generateGUID ()
 
 	        --print("save to " .. file_path)
+            if result == nil then
+                onResponse(nil)
+            end
 
 			file = io.open ( file_path, 'wb' )
 			file:write ( result )
