@@ -64,10 +64,12 @@ local A_BUTTON_STYLES = {
 --------------------------------------------------------------------------------
 -- Colors
 --------------------------------------------------------------------------------
-local YELLOW = "#ffff00"
-local GREEN = "#01FF70"
-local RED = "#FF4136"
-local LIME = string.hexToRGB( "#01FF70", true )
+local color = {} 
+color.YELLOW = string.hexToRGB("#ffff00", true)
+color.GREEN = string.hexToRGB("2ECC40", true)
+color.RED = string.hexToRGB( "#FF4136", true)
+color.LIME = string.hexToRGB( "#01FF70", true )
+color.BLUE = string.hexToRGB("#0074D9", true)
 
 --------------------------------------------------------------------------------
 -- Network functions
@@ -105,7 +107,7 @@ function WS_LISTENER.onMessageReceived( msg )
             PlayerScore:setText("" .. PLAYER_SCORE)
         end
             PLAYER_LIST[response["player_index"]+1].player_score:setText("" .. response["score"])
-            showPointScore(response["player_index"]+1, response["point"])
+            showPointScore(response["player_index"], response["point"])
     elseif response["msgtype"] == "game_over" then
         gameOver(response) 
     end
@@ -137,6 +139,7 @@ function onCreate(params)
     setupGame(params.game)  
     --makeLocalBoard()
     makeWordBox()
+    makeStreakBox()
     makePlayerScore()
     loadParticles()
 
@@ -168,7 +171,7 @@ function onTouchDown(e)
     e.x = e.x / scale
     e.y = e.y / scale
     CurrentWordString = ""
-    CurrentWordBox:setColor(unpack(string.hexToRGB(YELLOW, true)))
+    CurrentWordBox:setColor(unpack(color.YELLOW))
     clearSelectedLetters()
     stopAndResetWordBox()
     LAST_SELECTED_CELL = {math.ceil(e.x / cell_w), math.ceil((e.y - (GAME_HEIGHT - GAME_WIDTH)) / cell_h)}
@@ -187,6 +190,7 @@ function onTouchUp(e)
     if checkWord() then
         CURRENT_MAX_STREAK = CURRENT_MAX_STREAK + 1
         CURRENT_WORD_LENGTH = #CurrentWordString
+        updateStreak(CURRENT_MAX_STREAK)
         updatePlayerScore()
         playStars()
         showGoodWord()
@@ -195,6 +199,7 @@ function onTouchUp(e)
         showBadWord()
         failSound:play()
         CURRENT_MAX_STREAK = 0
+        updateStreak(CURRENT_MAX_STREAK)
     end
 end
 
@@ -435,7 +440,7 @@ function makePlayers(players)
                     text = "0",
                     size = {cell_w, 40},
                     parent = player_group,
-                    color = string.hexToRGB( "#FFDC00", true ),
+                    color = color.RED,
                     pos = {0, cell_h - 8},
                     align = {"center", "center"}
                 }
@@ -450,7 +455,7 @@ function makePlayers(players)
             }
 
         if PLAYER_ID == c then
-            player_score:setColor(unpack(string.hexToRGB( "#2ECC40", true )))
+            player_score:setColor(unpack(color.LIME))
         end  
 
         player_group.player_floating_score = player_floating_score
@@ -474,6 +479,18 @@ function makeDictionary()
     end
 end
 
+function makeStreakBox()
+    STREAK_BOX = TextLabel {
+        text = "",
+        size = {GAME_WIDTH, 40},
+        layer = guiView,
+        color = YELLOW,
+        pos = { 0, GAME_HEIGHT/2 - 65},
+        font = "arial-rounded",
+        align = {"left", "center"}
+    }
+    STREAK_BOX:setTextSize(15)
+end
 --------------------------------------------------------------------------------
 -- Update logic
 --------------------------------------------------------------------------------
@@ -585,7 +602,7 @@ function updateGameTimer()
                 sec = "0" .. sec
             end
             if GAME_TIME_SEC < 5 and GAME_TIME_SEC > 4 then
-                GameTimer:setColor(unpack(string.hexToRGB("#FF4136", true)))
+                GameTimer:setColor(unpack(color.RED))
             end
             GameTimer:setText(min .. ":" .. sec)
         end
@@ -595,6 +612,9 @@ function updateGameTimer()
     LAST_TIMESTAMP = MOAISim.getDeviceTime()
 end
 
+function updateStreak(streak_amount)
+    STREAK_BOX:setText("Streak: " .. streak_amount)
+end
 
 --------------------------------------------------------------------------------
 -- GameOver logic
@@ -614,12 +634,12 @@ end
 --------------------------------------------------------------------------------
 
 function showGoodWord()
-    CurrentWordBox:setColor(unpack(string.hexToRGB( GREEN, true )))
+    CurrentWordBox:setColor(unpack(color.LIME))
 end
 
 function showBadWord()
     print("showBadWord()")
-    CurrentWordBox:setColor(unpack(string.hexToRGB( RED, true )))
+    CurrentWordBox:setColor(unpack(color.RED))
     WORD_BOX_ANIM = Animation ({CurrentWordBox, CurrentWord}, 0.1, MOAIEaseType.SOFT_EASE_OUT)
         :moveLoc(10, 0, 0)
         :moveLoc(-20, 0, 0)
@@ -645,30 +665,23 @@ end
 --------------------------------------------------------------------------------
 
 function showPointScore(player_index, amount)
+    player_index = player_index + 1
     local left, top = PLAYER_LIST[player_index]:getPos()
     local score_color
     PLAYER_LIST[player_index].player_floating_score:setText("+" .. amount)
 
     if PLAYER_ID == player_index - 1 then
-        score_color = LIME
+        PLAYER_LIST[player_index].player_floating_score:setColor(unpack(color.LIME))
     else
-        score_color = string.hexToRGB( RED, true )
-    end
-
-    PLAYER_LIST[player_index].player_floating_score:setColor(unpack(score_color))
-
-    if PLAYER_ID == player_index - 1 then
-        PLAYER_LIST[player_index].player_floating_score:setColor(unpack(string.hexToRGB( "#01FF70", true )))
-    else
-        PLAYER_LIST[player_index].player_floating_score:setColor(unpack(string.hexToRGB( "#FF4136", true )))
+        PLAYER_LIST[player_index].player_floating_score:setColor(unpack(color.RED))
     end
 
     local anim1 = Animation({PLAYER_LIST[player_index].player_floating_score})
-        :fadeIn()
-        :seekScl(1.2, 1.2, 1.2, 0.1, MOAIEaseType.SMOOTH)
-        :seekScl(1.0, 1.0, 1.0, 0.2, MOAIEaseType.SMOOTH)
-        --:moveLoc(0, -75, 0, 1, MOAIEaseType.EASE_IN)
-        :moveColor(0, 0, 0, -1)
+        :setVisible(true)
+        :seekScl(1.2, 1.2, 1.2, 0.3, MOAIEaseType.SMOOTH)
+        :seekScl(1.0, 1.0, 1.0, 0.3, MOAIEaseType.SMOOTH)
+        :wait(1)
+        :setVisible(false)
     anim1:play( { } )
 
 end
@@ -681,6 +694,8 @@ function setGameTimer(time_in_sec)
     print(time_in_sec)
     GAME_TIME_SEC = time_in_sec
 end
+
+
 
 
 
