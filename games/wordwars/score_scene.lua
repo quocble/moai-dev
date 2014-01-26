@@ -185,7 +185,7 @@ function makeRankingPedestal(params)
         parent = pedestal_group,
         pos = {(319-75)/2,  -70},
 	    mask = "./assets/mask_img.png",
-	    main = "./assets/mask_img.png",
+	    main = "./assets/standard_profile.jpg",
 	    border = "./assets/border_img.png"        
 	}
 	table.insert(ranking, first_place)
@@ -195,7 +195,7 @@ function makeRankingPedestal(params)
         size  = { 60, 60 },
         pos = {51, 0},
 	    mask = "./assets/mask_img.png",
-	    main = "./assets/mask_img.png",
+	    main = "./assets/standard_profile.jpg",
 	    border = "./assets/border_img.png"        
 	}
 	table.insert(ranking, second_place)
@@ -205,7 +205,7 @@ function makeRankingPedestal(params)
         size  = { 75, 75 },
         pos = {203, 8},
 	    mask = "./assets/mask_img.png",
-	    main = "./assets/mask_img.png",
+	    main = "./assets/standard_profile.jpg",
 	    border = "./assets/border_img.png"
 	}
 	table.insert(ranking, third_place)
@@ -215,7 +215,7 @@ function makeRankingPedestal(params)
         size  = { 50, 50 },
         pos = {319-70, 106},
 	    mask = "./assets/mask_img.png",
-	    main = "./assets/mask_img.png",
+	    main = "./assets/standard_profile.jpg",
 	    border = "./assets/border_img.png"
 	}
 	table.insert(ranking, fourth_place)

@@ -290,7 +290,7 @@ function makeBoard()
     guiView = Layer()
     guiView:setScene(scene)
 
-    local floor = Mesh.newRect(0, 55, GAME_WIDTH, GAME_HEIGHT-55, {"#CB44F3", "#8FC7CB", 90})
+    local floor = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {"#CB44F3", "#8FC7CB", 90})
     floor:setLayer(guiView)
 
 end
@@ -299,7 +299,7 @@ function makeNavigationBar()
     navView = Layer()
     navView:setScene(scene)
     --left, top, width, height, col
-    local floor = Mesh.newRect(0, 0, GAME_WIDTH, 55, "#555C60")
+    local floor = Mesh.newRect(0, 0, GAME_WIDTH, 44, "#555C60")
     floor:setLayer(navView)
 end
 
@@ -315,7 +315,7 @@ function makeBackButton()
         text = "Back",
         parent = view,
         onClick = onBackClick,
-        pos = {10, 18},
+        pos = {10, 5},
         size = {60, 35},
         styles = { A_BUTTON_STYLES }
     }
@@ -325,7 +325,7 @@ function makeGameTimer()
     GameTimer = TextLabel {
         text = "0:00",
         size = {GAME_WIDTH, 20},
-        pos = {-10,  25},
+        pos = {-10,  5},
         font = "arial-rounded",
         layer = navView,
         color = string.hexToRGB( "#FFFFFF", true ),
@@ -402,8 +402,8 @@ end
 function makePlayerScore()
     PlayerScore = TextLabel {
         text = "0",
-        size = {GAME_WIDTH, 40},
-        pos = {0,  15},
+        size = {GAME_WIDTH, 44},
+        pos = {0,  0},
         layer = navView,
         color = string.hexToRGB( "#01FF70", true ),
         align = {"center", "center"}
@@ -427,7 +427,7 @@ function makePlayers(players)
                     parent = player_group,
                     pos = {0, 0},
                     mask = "./assets/mask_img.png",
-                    main = "./assets/mask_img.png",
+                    main = "./assets/standard_profile.jpg",
                     border = "./assets/border_img.png"
                 }
 

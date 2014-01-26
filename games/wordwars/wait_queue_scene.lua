@@ -78,13 +78,13 @@ function makeNavigationBar()
         size = { GAME_WIDTH, 60}
     }
 
-    local floor = Mesh.newRect(0, 0, GAME_WIDTH, 60, "#555C60")
+    local floor = Mesh.newRect(0, 0, GAME_WIDTH, 44, "#555C60")
     floor:setLayer(layer)
 
     backButton = Button {
         text = "Back",
         size = {60, 35},
-        pos = { 10, 18 },
+        pos = { 10, 5 },
         parent = guiView,
         onClick = onBackClick,
         styles = { A_BUTTON_STYLES }
@@ -92,7 +92,7 @@ function makeNavigationBar()
     titleLabel = TextLabel {
         text = "Search",
         size = {GAME_WIDTH, 40},
-        pos = { 0, 15 },
+        pos = { 0, 5 },
         layer = layer,
         color = string.hexToRGB( "#f7f7f7", true ),
         align = {"center", "center"},
@@ -120,8 +120,8 @@ function makePlaceholders()
             parent = player_group,
             pos = { (cell_w-75)/2 , (cell_w-75)/2},
             mask = "./assets/mask_img.png",
-            main = "./assets/mask_img.png",
-            border = "./assets/border_img.png"
+            border = "./assets/border_img.png",
+            main = "./assets/standard_profile.jpg",
         }
 
         local player_name = TextLabel {
@@ -144,12 +144,13 @@ end
 
 function makeStartTimer()
     StartTimer = TextLabel {
-    text = "Searching for more players...",
+    text = "Searching for players...",
     size = {GAME_WIDTH, 50},
     pos = {0,  70},
     parent = guiView,
     align = {"center", "center"},
     font = "arial-rounded",
+    fontSize = 13,
     color = string.hexToRGB( "#FFFFFF", true ),
     }
     StartTimer:setTextSize(24)
@@ -188,7 +189,9 @@ function updatePlayers(players)
         table.insert(allPlayers, player)
 
         DownloadManager:request(player.profile_img, function(filePath)
-            playerViews[count+i].image:setTexture(filePath, "main")
+            if(filePath ~= nil) then
+                playerViews[count+i].image:setTexture(filePath, "main")
+            end
             playerViews[count+i].name:setText(player.user_name)
             Animation({playerViews[count+i]}):setVisible(true):fadeIn():play()
         end)

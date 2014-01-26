@@ -65,11 +65,11 @@ function M:init(params)
 end
 
 function M:setMask(mask)
-    self:setTexture(mask, "main")
+    self:setTexture(mask, "mask")
 end
 
 function M:setMain(mask)
-    self:setTexture(mask, "mask")
+    self:setTexture(mask, "main")
 end
 
 function M:setBorder(mask)
@@ -77,9 +77,14 @@ function M:setBorder(mask)
 end
 
 function M:setTexture(texture, texture_type)
+    
+    if texture == nil then
+        return
+    end
+
     assert(texture, "texture nil value!")
     
-    print ("load texture " .. texture)
+    print ("load texture " .. texture .. " type= " .. texture_type)
     if type(texture) == "string" then
         texture = TextureManager:request(texture)
     end
@@ -89,13 +94,13 @@ function M:setTexture(texture, texture_type)
     end
     
     local left, top = self:getPos()
-    local resize = self.texture_list[texture_type] == nil and self.setSize ~= nil
+    local resize = self.texture_list[texture_type] == nil and self.setSize ~= nil and texture_type ~= "main"
     self.texture_list[texture_type] = texture
 
     if self.texture == nil then
         self.texture = texture
     end
-    print("SETTTING " .. texture_type)
+
     if texture_type == "mask" then
         self.multitexture:setTexture ( 2, texture )
 	elseif texture_type == "border" then

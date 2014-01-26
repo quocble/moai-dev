@@ -28,7 +28,11 @@ end
 function M:request(path, onResponse)
 	
 	--print("request " .. path)
-	
+	if path == nil or path == "" then
+        onResponse(nil)
+        return
+    end
+
     if cache[path] == nil then
     	function onComplete(result) 
 	        local file_path = MOAIEnvironment.documentDirectory .. "/" .. MOAIEnvironment.generateGUID ()

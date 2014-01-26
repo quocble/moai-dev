@@ -13,6 +13,7 @@ SERVER = "192.168.1.115:8888"
 function Listener.onConnected(msg)
 	print("Websocket connected.")
 	isConnected = true;
+	M:auth()
 	for i,obj in ipairs(listeners) do
 		obj.onConnected()
 	end

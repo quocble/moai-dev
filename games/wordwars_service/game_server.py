@@ -26,7 +26,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 PLAYER_COUNT = 2
 GAME_TIME = 30
-LOADING_DELAY = 6
+LOADING_DELAY = 3
 
 db = MySQLDatabase('wordwars', user='root',passwd='welcome321', host='mysql-finance.ci7tm9uowicf.us-east-1.rds.amazonaws.com')
 
@@ -57,7 +57,7 @@ class User(peewee.Model):
         database = db
 
     @classmethod
-    def find_user_secret(user_id, secret):
+    def find_user_secret(self, user_id, secret):
         return User.get( (User.secret  == secret) & (User.user_id == user_id) )
 
     @classmethod
@@ -227,7 +227,7 @@ class Game(object):
                 highest_word_length['word'] = player.max_word
                 highest_word_length['max_wlength'] = player.max_wlength
             if most_words['count'] < player.total_words:
-                most_words['name'] = player.name
+                most_words['name'] = player.get_username()
                 most_words['count'] = player.total_words
             scores.append({'name' : player.get_username(), 'score' : player.score, 'profile_img' : player.get_profile_img() })
         msg = { 'msgtype' : 'game_over', 'players' : scores, 'most_words' : most_words, 
@@ -254,20 +254,20 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
         if self.profile.user_id == "bot":
             return "Bot"
         else:
-            return self.profile.user_id
+            return self.profile.username
 
     def get_profile_img(self):
         if self.profile.user_id == "bot":
             return ""
         else:        
-            return "http://graph.facebook.com/" + self.profile.user_id + "/picture?type=small"
+            return "http://graph.facebook.com/" + self.profile.user_id + "/picture?type=normal"
 
     def get_data(self):
         return {'user_name' : self.get_username(), 'profile_img': self.get_profile_img() }
 
     def auth(self, user_id, secret):
         try:
-            user = User.find_user(user_id)
+            user = User.find_user_secret(user_id, secret)
         except User.DoesNotExist:
             user = None
         self.profile = user    
@@ -300,7 +300,6 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
 
             players = []
             if len(PlayerHandler.queue_players) >= PLAYER_COUNT:
-
                 for n in range(PLAYER_COUNT):
                     players.append(PlayerHandler.queue_players.popleft())
                 

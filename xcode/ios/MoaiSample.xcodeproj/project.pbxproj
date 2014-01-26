@@ -879,7 +879,7 @@
 		07E6C6A0140C5EBD004D1227 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		07EF3E43147BAAA5006CFDCE /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		1D6058910D05DD3D006BFB54 /* moai.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moai.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1D6058910D05DD3D006BFB54 /* WordDash.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WordDash.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765A40DF7441C002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		32CA4F630368D1EE00C91783 /* MoaiSample_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MoaiSample_Prefix.pch; sourceTree = "<group>"; };
@@ -1133,7 +1133,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1D6058910D05DD3D006BFB54 /* moai.app */,
+				1D6058910D05DD3D006BFB54 /* WordDash.app */,
 				CD508AA2155E3AF90002FC3B /* moai-fmod-ex.app */,
 				CDDD307E1574AC7300C410A0 /* moai-fmod-designer.app */,
 				425145C317E608070065B1C6 /* moai-luajit.app */,
@@ -1282,7 +1282,7 @@
 			);
 			name = moai;
 			productName = MoaiSample;
-			productReference = 1D6058910D05DD3D006BFB54 /* moai.app */;
+			productReference = 1D6058910D05DD3D006BFB54 /* WordDash.app */;
 			productType = "com.apple.product-type.application";
 		};
 		4251455817E608070065B1C6 /* moai-luajit */ = {
@@ -2182,7 +2182,7 @@
 					"-force_load",
 					"\"$(BUILT_PRODUCTS_DIR)/libmoai-ios-playhaven.a\"",
 				);
-				PRODUCT_NAME = moai;
+				PRODUCT_NAME = WordDash;
 			};
 			name = Debug;
 		};
@@ -2201,7 +2201,7 @@
 					"-force_load",
 					"\"$(BUILT_PRODUCTS_DIR)/libmoai-ios-playhaven.a\"",
 				);
-				PRODUCT_NAME = moai;
+				PRODUCT_NAME = WordDash;
 			};
 			name = Release;
 		};

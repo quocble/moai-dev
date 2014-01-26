@@ -8,6 +8,9 @@ function M:getPath()
 end
 
 function M:load()
+	if (MOAIFileSystem.checkFileExists(self:getPath()) == false) then
+		return
+	end
 	print("Loading settings " .. self:getPath())
 	self.data = dofile ( self:getPath() )
 	print("username " .. self:get("username"))
