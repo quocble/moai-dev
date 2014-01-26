@@ -39,6 +39,9 @@ TMXMapView              = require "hp/tmx/TMXMapView"
 TMXObject               = require "hp/tmx/TMXObject"
 TMXObjectGroup          = require "hp/tmx/TMXObjectGroup"
 TMXTileset              = require "hp/tmx/TMXTileset"
+
+---- GAME SPECIFICS ----
+Settings				= require "widgets/Settings"
 GameService				= require "game_service"
 DownloadManager			= require "download_manager"
 MaskSprite				= require "widgets/MaskSprite"

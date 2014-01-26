@@ -4,7 +4,7 @@ appId = '468153463310522'
 
 MOAIFacebookAndroid.init ( appId )
 
-function loginSuccessCallback ()
+function loginSuccessCallbackAndroid ()
     mToken = MOAIFacebookAndroid.getToken ()
     eToken = MOAIFacebookAndroid.getExpirationDate ()
 
@@ -21,7 +21,7 @@ end
 function onStartClick()
     if MOAIFacebookAndroid then
         if MOAIFacebookAndroid.setListener then
-            MOAIFacebookAndroid.setListener ( MOAIFacebookAndroid.SESSION_DID_LOGIN, loginSuccessCallback )
+            MOAIFacebookAndroid.setListener ( MOAIFacebookAndroid.SESSION_DID_LOGIN, loginSuccessCallbackAndroid )
         end
 
         if MOAIFacebookAndroid.login then

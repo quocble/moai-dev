@@ -134,12 +134,16 @@ class Bot(object):
     self.playing = False
     print "### closed ###"
 
+  def auth(self):
+    self.ws.send(json.dumps({'msgtype' : 'auth', 'user_id' : 'bot', 'secret' : 'secret'}))
+
   def add_to_queue(self):
     print("add to queue")
     self.ws.send(json.dumps({'msgtype' : 'queue', 'userid' : '' }))
 
   def on_open(self, ws):
     print "open"
+    self.auth()
     self.add_to_queue()
 
 def main():

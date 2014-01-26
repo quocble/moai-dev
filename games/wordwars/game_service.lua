@@ -8,6 +8,8 @@ local ws = nil
 local Listener = {}
 local isConnected = false
 
+SERVER = "192.168.1.115:8888"
+
 function Listener.onConnected(msg)
 	print("Websocket connected.")
 	isConnected = true;
@@ -48,7 +50,7 @@ function M:start()
     	ws:setListener ( MOAIWebSocket.ON_CONNECT, Listener.onConnected )
     	ws:setListener ( MOAIWebSocket.ON_CLOSE, Listener.onClosed )
     	ws:setListener ( MOAIWebSocket.ON_FAIL, Listener.onFailed )
-	    ws:start("ws://192.168.1.115:8888/ws")
+	    ws:start("ws://" .. SERVER .. "/ws")
 	    print("Opening web socket")
     end
 end
@@ -69,6 +71,13 @@ function M:removeListener(obj)
 	table.removeElement(listeners, obj)	
 end
 
+function M:auth()
+	print("Auth game")
+    local send_word_to_server = { msgtype = "auth", user_id = Settings:get("user_id"), secret = Settings:get("secret")}
+    msg = MOAIJsonParser.encode ( send_word_to_server )
+    ws:write(msg)
+end
+
 function M:queueGame()
 	print("Queue game")
     local send_word_to_server = { msgtype = "queue" }
@@ -83,5 +92,28 @@ function M:leaveGameAndQueue()
     ws:write(msg)
 end
 
+function M:loginWithFacebook(token, callback)
+
+	local function onLoginFinish ( task, responseCode )
+	    print ( "login finished " .. responseCode )
+
+	    if ( task:getSize ()) then
+	        print ( task:getString ())
+	        local data = MOAIJsonParser.decode ( task:getString ())
+	        callback(data)
+	    else
+	        print ( "nothing" )
+	    end
+	end
+
+	local auth_url = "http://" .. SERVER .. "/login/fb"
+	task = MOAIHttpTask.new ()
+	task:setVerb ( MOAIHttpTask.HTTP_POST )
+	task:setUrl ( auth_url )
+	task:setBody ( MOAIJsonParser.encode ( { access_token = token } ) )
+	task:setCallback ( onLoginFinish )
+	task:setUserAgent ( "Moai" )
+	task:performAsync ()
+end
 
 return M

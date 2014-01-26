@@ -1,11 +1,83 @@
 module(..., package.seeall)
 
+local string = require("hp/lang/string")
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
 
+local FB_BUTTON_STYLES = {
+    normal = {
+        skin = "./assets/login_with_fb.png",
+        skinColor = {1, 1, 1, 1.0},
+        textColor = {1, 1, 1, 1.0},
+    },
+    selected = {
+        skin = "./assets/login_with_fb.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    over = {
+        skin = "./assets/login_with_fb.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    disabled = {
+        skin = "./assets/login_with_fb.png",
+    },
+}
 
-function onStartClick()
-    SceneManager:openScene("main_scene")
+local EMAIL_BUTTON_STYLES = {
+    normal = {
+        skin = "./assets/login_with_email.png",
+        skinColor = {1, 1, 1, 1.0},
+        textColor = {1, 1, 1, 1.0},
+    },
+    selected = {
+        skin = "./assets/login_with_email.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    over = {
+        skin = "./assets/login_with_email.png",
+        skinColor = {0.5, 0.5, 0.5, 0.8},
+    },
+    disabled = {
+        skin = "./assets/login_with_email.png",
+    },
+}
+
+local filterMesh = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, "#000000")
+MOAIFacebook = MOAIFacebookAndroid or MOAIFacebookIOS
+MOAIFacebook.init ( "468153463310522" )
+
+function loginSuccessCallback ()
+    mToken = MOAIFacebook.getToken ()
+    eToken = MOAIFacebook.getExpirationDate ()
+
+    print("token " .. mToken)
+    GameService:loginWithFacebook(mToken, function(data)
+        Settings:set("token", mToken)
+        Settings:set("user_id", data["user_id"])
+        Settings:set("secret", data["secret"])
+        Settings:set("username", data["username"])
+        Settings:save()
+
+        print("user_id : " .. Settings:get("user_id"))
+        print("user_name : " .. Settings:get("username"))
+        print("secret : " .. Settings:get("secret"))
+        print("login successful")
+
+        SceneManager:openScene("menu_scene", { animation = "crossFade"}  )
+    end)
+end
+
+function onLoginClicked()
+    if MOAIFacebook then
+        if MOAIFacebook.setListener then
+            MOAIFacebook.setListener ( MOAIFacebook.SESSION_DID_LOGIN, loginSuccessCallback )
+        end
+
+        if MOAIFacebook.login then
+            print ("attempt to login to facebook")
+            MOAIFacebook.login ( {'basic_info'} )
+        end    
+    end
 end
 
 function onCreate(params)
@@ -16,45 +88,51 @@ function onCreate(params)
     local w, h = 526/2, 146/2
 
     sprite1 = Sprite {
+        texture = "./assets/menu_bg.png", 
+        layer = layer,
+        size = { GAME_WIDTH , GAME_HEIGHT } ,
+        pos = { 0, 0 }
+    }    
+
+    sprite1 = Sprite {
         texture = "./assets/game_title.png", 
         layer = layer,
         size = { w , h } ,
-        pos = { (GAME_WIDTH - w) / 2 , 80 }
+        pos = { (GAME_WIDTH - w) / 2 , 70 }
     }    
-
-    -- anim2 = Animation():loop(0, 
-    --     Animation({sprite1}, 0.80, MOAIEaseType.SMOOTH):moveLoc(10, 0, 0):moveLoc(-10, 0, 0))
-    -- anim2:play()
 
     view = View {
         scene = scene,
-        pos = {0, 50},
-        layout = {
-            VBoxLayout {
-                align = {"center", "center"},
-                padding = {10, 10, 10, 30},
-            }
+        pos = {0, 0},
+        layout = VBoxLayout {
+            align = {"center", "center"},
+            padding = {10, 10, 10, 10},
+            gap = {10, 20},            
         },
-        children = {{
-            Button {
-                name = "startButton",
-                text = "Play",
-                onClick = onStartClick,
-                size = { 175, 55}
-            },
-            Button {
-                name = "backButton",
-                text = "Invite",
-                onClick = onBackClick,
-                size = { 175, 55}
-            },
-            Button {
-                name = "testButton1",
-                text = "Help",
-                size = { 175, 55}
-            },
-        }},
     }
+
+    fbButton = Button {
+        name = "startButton",
+        text = "",
+        onClick = onLoginClicked,
+        size = { 433/2, 92/2},
+        styles = { FB_BUTTON_STYLES },
+        parent = view
+    }
+
+    emailButton = Button {
+        name = "startButton",
+        text = "",
+        onClick = onStartClick,
+        size = { 433/2, 92/2},
+        styles = { EMAIL_BUTTON_STYLES },
+        parent = view
+    }
+    fbButton:setCenterPiv()
+
+    anim2 = Animation():loop(0, 
+        Animation({ fbButton }):seekScl(1.02, 1.02, 1, 1.0, MOAIEaseType.SOFT_SMOOTH):wait(0.10):seekScl(1, 1, 1, 1.0, MOAIEaseType.SOFT_SMOOTH))
+    anim2:play()
 
 end
 
@@ -76,16 +154,4 @@ end
 
 function onDestroy()
     print("onDestroy()")
-end
-
-function onTouchDown(event)
-    print("onTouchDown(event)")
-end
-
-function onTouchUp(event)
-    print("onTouchUp(event)")
-end
-
-function onTouchMove(event)
-    print("onTouchMove(event)")
 end

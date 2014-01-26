@@ -189,11 +189,10 @@ function updatePlayers(players)
 
         DownloadManager:request(player.profile_img, function(filePath)
             playerViews[count+i].image:setTexture(filePath, "main")
-            playerViews[count+i].name:setText(player.player_name)
+            playerViews[count+i].name:setText(player.user_name)
             Animation({playerViews[count+i]}):setVisible(true):fadeIn():play()
         end)
     end
-
 end
 
 function startGame(response)
