@@ -23,6 +23,23 @@ define("port", default=8888, help="run on the given port", type=int)
 PLAYER_COUNT = 2
 GAME_TIME = 30
 LOADING_DELAY = 6
+GLOBAL_WORDS_PLAYED = []
+GLOBAL_DEAD_WORDS = []
+LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+            'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+LETTER_POINT_VALUES = { 'A' : 1, 'B' : 3, 'C' : 3, 'D' : 2, 'E' : 1, 'F' : 4, 'G' : 2, 'H' : 4, 
+                    'I' : 1, 'J' : 8, 'K' : 5, 'L' : 1, 'M' : 3, 'N' : 1, 'O' : 1, 'P' : 3,
+                    'Q' : 10, 'R' : 1, 'S' : 1, 'T' : 1, 'U' : 1, 'V' : 4, 'W' : 4, 'X' : 8,
+                    'Y' : 4, 'Z' : 10 }
+
+# 2 blank tiles (scoring 0 points)
+# 1 point: E , A , I , O , N , R , T , L , S , U 
+# 2 points: D , G 
+# 3 points: B , C , M , P 
+# 4 points: F , H , V , W , Y 
+# 5 points: K 
+# 8 points: J , X 
+# 10 points: Q , Z 
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -68,7 +85,7 @@ class Game(object):
     def __init__(self, players):
         self.players = players
         self.board = Game.makeBoard()
-        self.words_play = []
+        self.player_words_played = []
         self.game_timer = threading.Timer(GAME_TIME + LOADING_DELAY + 1, self.game_over)
         self.game_timer.start()
         print ("making new game with board")
@@ -91,6 +108,16 @@ class Game(object):
             return boards[0]
         except GameBoard.DoesNotExist:
             print("no board")
+
+    def get_point_value(self, word):
+        point_total = 0
+        for letter in LETTERS:
+            point = word.count(letter)
+            # print("letter: " + letter + " point: " + str(point))
+            point = point * LETTER_POINT_VALUES[letter]
+            point_total += point
+        # print("word: " + word + " points: " + str(point_total))
+        return point_total
  
     def notify_new_game_after(self, time):
         self.notify_countdown_timer(LOADING_DELAY)
@@ -115,9 +142,18 @@ class Game(object):
 
     def play_word(self, player , word):
         print("player " + hex(id(self)) + " played " + word)
-        point = 0
-        if word not in self.words_play :
-            point = 10
+        # point = 0
+        if word not in player.played_words : #check if unique user played this word
+            player.played_words.append(word)
+            point = self.get_point_value(word)
+            if word not in GLOBAL_DEAD_WORDS and word in GLOBAL_WORDS_PLAYED :
+                point = point / 2
+                GLOBAL_DEAD_WORDS.append(word)
+            elif word in GLOBAL_DEAD_WORDS :
+                point = 0
+
+        if word not in GLOBAL_WORDS_PLAYED :
+            GLOBAL_WORDS_PLAYED.append(word)
 
         player.total_words += 1
         player.score += point
@@ -148,6 +184,8 @@ class Game(object):
         highest_word_length = {'name' : '', 'word' : '', 'max_wlength' : 0, }
         most_words = {'name' : '', 'count' : 0}
         scores = []
+        GLOBAL_WORDS_PLAYED = []
+        GLOBAL_DEAD_WORDS = []
 
         for player in self.players:
             if highest_streak['streak'] < player.streak:
@@ -221,6 +259,7 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
                     player.name = hex(id(player))
                     player.max_word = ""
                     player.streak = 0
+                    player.played_words = []
                     player.max_wlength = 0
                     player.current_game = new_game
                     player.total_words = 0
