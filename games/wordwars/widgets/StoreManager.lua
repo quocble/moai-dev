@@ -126,7 +126,7 @@ print("Starting up on:" .. MOAIEnvironment.osBrand  .. " version:" .. MOAIEnviro
 -----------------------------------------------------------------
 
 function onBuyButton()
-    if MOAIBilling.requestPurchase ( 'gold_1', '' ) then
+    if MOAIBilling.requestPurchase ( 'android.test.purchased', '' ) then
         print ( "purchase successfully requested" )
     else
         print ( "requesting purchase failed" )
