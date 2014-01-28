@@ -45,7 +45,7 @@ Settings				= require "widgets/Settings"
 GameService				= require "game_service"
 DownloadManager			= require "download_manager"
 MaskSprite				= require "widgets/MaskSprite"
-buttonSound				= SoundManager:getSound("./assets/buttonclick.m4a", 0.25)
+buttonSound				= SoundManager:getSound("./assets/buttonclick.wav", 0.25)
 StoreManager			= require "widgets/StoreManager"
 StoreManager:init()
 

@@ -4,6 +4,8 @@ local array = require "hp/lang/array"
 local table = require("hp/lang/table")
 local class = require("hp/lang/class")
 local string = require("hp/lang/string")
+local buySound = SoundManager:getSound("./assets/A_select.ogg", 0.25)
+local addCoin = SoundManager:getSound("./assets/A_addcoin.ogg", 0.25)
 
 ANDROID_PRODUCT_IDS = { "android.test.purchased", "gold001"}
 Available_Products = { 
@@ -68,6 +70,7 @@ print("Starting up on:" .. MOAIEnvironment.osBrand  .. " version:" .. MOAIEnviro
 
 function M:init(params)
     self:registerBilling()
+    self.testing = true
 end
 
 function M:registerBilling()
@@ -90,6 +93,12 @@ function M:registerBilling()
             print ( "onPurchaseResponseReceived: " .. id )
             if ( code == MOAIBilling.BILLING_RESULT_SUCCESS ) then
                 print ( "purchase request received" )
+                local balance = Settings:get("balance")
+                local new_balance = balance + self.buying_product.coin
+                Settings:set("balance", new_balance)
+                Settings:save()                
+                self.onPurchased()       
+                self:animatePurchase(new_balance)         
             elseif ( code == MOAIBilling.BILLING_RESULT_USER_CANCELED ) then
                 print ( "user canceled purchase" )
             else
@@ -162,7 +171,65 @@ function M:updateBilling()
     end
 end
 
-function M:getPanel(onBackClick) 
+function M:animatePurchase(new_balance)
+
+    local superParent = self.current_panel:getParent()
+    local filterMesh = Sprite {
+        texture = "./assets/gray_40.png", 
+        size = { superParent:getWidth() , superParent:getHeight() } ,
+        pos = { 0, 0 },
+        parent = superParent
+    }  
+
+    local CurrentWordBox = NinePatch {
+        texture = "./assets/btn_down.png", 
+        size = { 120, 40},
+        align = {"center", "center"},
+        parent = superParent
+    }
+
+    local CurrentWord = TextLabel {
+        text = "" .. new_balance,
+        size = {120, 40},
+        color = string.hexToRGB( "#0066CC", true ),
+        align = {"center", "center"},
+        parent = superParent
+    }
+    CurrentWordBox:setStretchColumns(0.15, 0.70, 0.15)
+
+    local xcenter, ycenter = superParent:getWidth()/2, superParent:getHeight()/2
+    CurrentWordBox:setCenterPos(xcenter, ycenter)
+    CurrentWord:setCenterPos(xcenter, ycenter)
+
+    textBoxAnim = Animation({CurrentWord})
+        :setScl(0 ,1 , 1)
+        :fadeIn(0.10)
+        :seekScl(1, 1, 0, 1.0)
+        :wait(1)
+        :fadeOut()
+
+    backgroundAnim = Animation({CurrentWordBox})
+        :fadeIn(0.10)
+        :wait(2.7)
+        :fadeOut()
+
+    anim1 = Animation():parallel(
+            textBoxAnim,
+            backgroundAnim)       
+
+    addCoin:play()
+
+    function completeHandler()
+        superParent:removeChild(CurrentWordBox)
+        superParent:removeChild(CurrentWord)
+        superParent:removeChild(filterMesh)
+    end
+    anim1:play({onComplete = completeHandler})
+end
+
+function M:getPanel(onBackClick, onPurchased) 
+
+    self.onPurchased = onPurchased
 
 	local panel = Panel {
 	    name = "panel",
@@ -193,7 +260,7 @@ function M:getPanel(onBackClick)
     local ROW_HEIGHT = 61
     local TOP_MARGIN = 50
     self.rows = {}
-     
+
     for i=0, 4 do
 
     	local top = TOP_MARGIN + (i* ROW_HEIGHT) + (ROW_HEIGHT/2)
@@ -249,8 +316,17 @@ function M:getPanel(onBackClick)
         end
 
         local function buyButton(e)
-            print("Buying product " .. e.target.data.pid)
-            if MOAIBilling.requestPurchase ( e.target.data.pid, '' ) then
+
+            local product_id = e.target.data.pid
+            if self.testing then
+                product_id = "android.test.purchased"
+            end
+
+            print("Buying product " .. product_id)
+            self.buying_product = e.target.data
+            buySound:play()
+
+            if MOAIBilling.requestPurchase ( product_id, '' ) then
                 print ( "purchase successfully requested" )
             else
                 print ( "requesting purchase failed" )
@@ -264,7 +340,7 @@ function M:getPanel(onBackClick)
     end
 
     self:updateBilling()
-
+    self.current_panel = panel
 	return panel
 end
 

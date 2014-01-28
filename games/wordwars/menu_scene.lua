@@ -41,8 +41,6 @@ local SHOP_BUTTON_STYLES = {
     },
 }
 
-local filterMesh = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, "#000000")
-
 function onStartClick()
     buttonSound:play()
     SceneManager:openScene("wait_queue_scene", { websocket = "X" , animation = "crossFade"}  )
@@ -52,21 +50,25 @@ function onShopBackClick()
     if store_panel then
         buttonSound:play()        
         view:removeChild(store_panel)
+        view:removeChild(filterMesh)
         store_panel = nil
         shopDisplayed = false
-        view:removeChild(filterMesh)
+        filterMesh:setVisible(false)
     end
+end
+
+function onPurchased()
+    updateBalance()            
 end
 
 function onShopClick()
     print("Store clicked")
     if not shopDisplayed then
         buttonSound:play()
-        store_panel = StoreManager:getPanel(onShopBackClick)
+        store_panel = StoreManager:getPanel(onShopBackClick, onPurchased)
         filterMesh:setParent(view)
         store_panel:setParent(view)
         store_panel:setCenterPos(GAME_WIDTH/2, GAME_HEIGHT/2)
-        filterMesh:setAlpha(0.50)
 
         Animation({ store_panel }):fadeIn(0.5):play()
         shopDisplayed = true
@@ -121,7 +123,7 @@ function onCreate(params)
     }
 
     balanceLabel = TextLabel {
-        text = "100",
+        text = "",
         size = { 226/2, 53/2},
         parent = view,
         color = string.hexToRGB( "#FFFFFF", true ),
@@ -130,12 +132,23 @@ function onCreate(params)
         align = {"right", "center"}
     }
 
+    filterMesh = Sprite {
+            texture = "./assets/gray_70.png", 
+            size = { GAME_WIDTH , GAME_HEIGHT } ,
+            pos = { 0, 0 }
+    }  
+
+    updateBalance()
 
     playButton:setCenterPiv()
     anim2 = Animation():loop(0, 
         Animation({ playButton }):seekScl(1.08, 1.08, 1, 1.0, MOAIEaseType.SOFT_SMOOTH):wait(0.10):seekScl(1, 1, 1, 1.0, MOAIEaseType.SOFT_SMOOTH))
     anim2:play()
 
+end
+
+function updateBalance()
+    balanceLabel:setText("" .. Settings:get("balance"))
 end
 
 function onStart()

@@ -9,6 +9,10 @@ end
 
 function M:load()
 	if (MOAIFileSystem.checkFileExists(self:getPath()) == false) then
+		self.data = {
+			balance = 20
+		}
+		self:save()
 		return
 	end
 	print("Loading settings " .. self:getPath())
@@ -31,6 +35,9 @@ function M:set(key, value)
 end
 
 function M:get(key)
+	if key == "balance" and self.data[key] == nil then
+		return 10
+	end
 	return self.data[key]
 end
 
