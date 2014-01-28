@@ -113,7 +113,7 @@ function onCreate(params)
     scoreButton = Button {
         name = "startButton",
         onClick = onShopClick,
-        size = { 226/2, 53/2},
+        size = { 226/2, 30},
         styles = { SHOP_BUTTON_STYLES },
         parent = view,
         pos = { GAME_WIDTH - (226/2) - 20, 10 },
