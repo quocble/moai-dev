@@ -71,7 +71,12 @@ function M:updateDisplay()
     
     if not self._skinResizable then
         local tw, th = background.texture:getSize()
-        self:setSize(tw, th)
+        tw = tw / Application:getViewScale()
+        th = th / Application:getViewScale()
+        local pw, ph = self:getSize()
+        local left, top = (pw - tw) / 2 , (ph - th) /2 
+        self._background:setSize(tw, th)
+        self._background:setPos(left, top)
     end
 end
 

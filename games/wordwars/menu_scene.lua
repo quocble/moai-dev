@@ -3,43 +3,8 @@ module(..., package.seeall)
 local string = require("hp/lang/string")
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
+local settings_shown = false
 
-local A_BUTTON_STYLES = {
-    normal = {
-        skin = "./assets/main_btn.png",
-        skinColor = {1, 1, 1, 1.0},
-    },
-    selected = {
-        skin = "./assets/main_btn.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    over = {
-        skin = "./assets/main_btn.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    disabled = {
-        skin = "./assets/main_btn.png",
-    },
-}
-
-local SHOP_BUTTON_STYLES = {
-    normal = {
-        skin = "./assets/shop_btn.png",
-        skinColor = {1, 1, 1, 1.0},
-        textColor = {1, 1, 1, 1.0},
-    },
-    selected = {
-        skin = "./assets/shop_btn.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    over = {
-        skin = "./assets/shop_btn.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    disabled = {
-        skin = "./assets/shop_btn.png",
-    },
-}
 
 function onStartClick()
     buttonSound:play()
@@ -49,12 +14,26 @@ end
 function onShopBackClick()
     if store_panel then
         buttonSound:play()        
-        view:removeChild(store_panel)
-        view:removeChild(filterMesh)
+        --view:removeChild(store_panel)
+        store_panel:setParent(nil)
+        filterMesh:setParent(nil)
         store_panel = nil
         shopDisplayed = false
-        filterMesh:setVisible(false)
     end
+end
+
+function onLogout()
+    print("onLogout()")
+    SceneManager:openScene("login_scene", { currentClosing = true })
+end
+
+function onMusicToggle()
+end
+
+function onSoundToggle()
+end
+
+function onHelp()
 end
 
 function onPurchased()
@@ -73,6 +52,76 @@ function onShopClick()
         Animation({ store_panel }):fadeIn(0.5):play()
         shopDisplayed = true
     end
+end
+
+function showSettings()
+    if view_settings then
+        return
+    end
+
+    view_settings = View {
+        scene = scene,
+        pos = {0, -90}
+    }
+
+    filterMesh:setParent(view)
+
+    sprite1 = Sprite {
+        texture = "./assets/setting_bg.png", 
+        parent = view_settings,
+        size = { 320 , 90 } ,
+        pos = { 0, 0 }
+    } 
+
+    buttons = { 
+        { skin = "./assets/logout_icon.png", click = onLogout },
+        { skin = "./assets/help_icon.png", click = onMusicToggle },
+        { skin = "./assets/sound_icon.png", click = onSoundToggle },
+        { skin = "./assets/music_icon.png", click = onHelp },
+    }
+    local button_holder = {}
+
+    for i=1, #buttons do
+        local setting_btn = Button {
+            name = "setting_button",
+            text = "",
+            onClick = buttons[i].click,
+            size = { GAME_WIDTH / 4 , 90 },
+            pos = { (GAME_WIDTH/4) * (i-1) , 0 },
+            styles = { ThemeManager:getTheme():buttonStyle(buttons[i].skin) },
+            parent = view_settings,
+            skinResizable = false,            
+        }
+        table.insert(button_holder, setting_btn)
+        setting_btn:setVisible(false)
+        setting_btn:setCenterPiv()        
+    end   
+
+    anim2 = Animation({ view_settings }):seekLoc(0, 0, 0, 0.25, MOAIEaseType.SOFT_SMOOTH)
+                                        :wait(0.10)
+                                        :parallel(
+                                            Animation(button_holder, 1):setVisible(true)
+                                            :setScl(0.5, 0.5, 1)
+                                            :seekScl(1.08, 1.08, 1.0, 0.25, MOAIEaseType.SOFT_SMOOTH)
+                                            :wait(0.10)
+                                            :seekScl(1.0, 1.0, 1.0, 0.10, MOAIEaseType.SOFT_SMOOTH)                                            
+                                        )
+ 
+    anim2:play()        
+end
+
+function hideSetting()
+    if view_settings then
+        print("hide settings")
+        anim2 = Animation({ view_settings }):seekLoc(0, -90, 0, 0.25, MOAIEaseType.SOFT_SMOOTH)
+                                        :wait(0.10)
+        anim2:play({ onComplete = function()
+            view_settings:setScene(nil)
+            filterMesh:setParent(nil)
+            view_settings = nil            
+        end
+        })
+    end    
 end
 
 function onCreate(params)
@@ -106,7 +155,7 @@ function onCreate(params)
         text = "Play",
         onClick = onStartClick,
         size = { 155, 45},
-        styles = { A_BUTTON_STYLES },
+        styles = { ThemeManager:getTheme():buttonStyle("./assets/main_btn.png") },
         parent = view,
     }
 
@@ -116,9 +165,20 @@ function onCreate(params)
         name = "startButton",
         onClick = onShopClick,
         size = { 226/2, 30},
-        styles = { SHOP_BUTTON_STYLES },
+        styles = { ThemeManager:getTheme():buttonStyle("./assets/shop_btn.png") },
         parent = view,
         pos = { GAME_WIDTH - (226/2) - 20, 10 },
+        text = "",
+        skinResizable = false,
+    }
+
+    settingButton = Button {
+        name = "settingButton",
+        onClick = showSettings,
+        size = { 50, 46},
+        styles = { ThemeManager:getTheme():buttonStyle("./assets/settings_btn.png") },
+        parent = view,
+        pos = { 0, 0 },
         text = "",
     }
 
@@ -169,4 +229,17 @@ end
 
 function onDestroy()
     print("onDestroy()")
+end
+
+function onTouchUp(e)
+    print("touch up()")
+    if view_settings then
+        local scale = layer:getViewScale()
+        e.x = e.x / scale
+        e.y = e.y / scale
+
+        if e.y > 100 then
+            hideSetting()
+        end
+    end
 end

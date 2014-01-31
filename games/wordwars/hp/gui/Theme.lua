@@ -112,4 +112,24 @@ M.DialogBox = {
     },
 }
 
+function M:buttonStyle(skin) 
+    return {
+                normal = {
+                    skin = skin,
+                    skinColor = {1, 1, 1, 1.0},
+                },
+                selected = {
+                    skin = skin,                
+                    skinColor = {0.5, 0.5, 0.5, 0.8},
+                },
+                over = {
+                    skin = skin,
+                    skinColor = {0.5, 0.5, 0.5, 0.8},
+                },
+                disabled = {
+                    skin = skin,                
+                },
+            }
+end
+
 return M

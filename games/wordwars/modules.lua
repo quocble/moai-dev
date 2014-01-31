@@ -41,6 +41,7 @@ TMXObjectGroup          = require "hp/tmx/TMXObjectGroup"
 TMXTileset              = require "hp/tmx/TMXTileset"
 
 ---- GAME SPECIFICS ----
+ThemeManager      		= require "hp/manager/ThemeManager"
 Settings				= require "widgets/Settings"
 GameService				= require "game_service"
 DownloadManager			= require "download_manager"
