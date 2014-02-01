@@ -7,13 +7,13 @@ local settings_shown = false
 
 
 function onStartClick()
-    buttonSound:play()
+    SoundManager:play(buttonSound)        
     SceneManager:openScene("wait_queue_scene", { animation = "slideToLeft"}  )
 end
 
 function onShopBackClick()
     if store_panel then
-        buttonSound:play()        
+        SoundManager:play(buttonSound)        
         --view:removeChild(store_panel)
         store_panel:setParent(nil)
         filterMesh:setParent(nil)
@@ -36,7 +36,6 @@ end
 
 function onSoundToggle(e)
     local enable = not e.target:isSelected()
-    print("set sound to = ", enable)
     SoundManager:enableSound(enable)
     Settings:set("sound", enable)
     Settings:save()
@@ -52,7 +51,7 @@ end
 function onShopClick()
     print("Store clicked")
     if not shopDisplayed then
-        buttonSound:play()
+        SoundManager:play(buttonSound)
         store_panel = StoreManager:getPanel(onShopBackClick, onPurchased)
         filterMesh:setParent(view)
         store_panel:setParent(view)

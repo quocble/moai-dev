@@ -18,7 +18,8 @@ function M:initialize()
     end
 end
 
-function M:enableSound(enable) 
+function M:enableSound(enable)
+    print("set sound to = ", enable)
     self.enable_sound = enable
 end
 
@@ -32,6 +33,13 @@ end
 
 function M:isMusicEnabled() 
     return self.enable_music
+end
+
+function M:play(sound)
+    print("play sound ", self.enable_sound)    
+    if self.enable_sound then
+        sound:play()
+    end
 end
 
 ----------------------------------------------------------------

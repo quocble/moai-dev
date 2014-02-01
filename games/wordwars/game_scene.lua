@@ -199,10 +199,10 @@ function onTouchUp(e)
         updatePlayerScore()
         playStars()
         showGoodWord()
-        goodSound:play()
+        SoundManager:play(goodSound)        
     else
         showBadWord()
-        failSound:play()
+        SoundManager:play(failSound)        
         CURRENT_MAX_STREAK = 0
         updateStreak(CURRENT_MAX_STREAK)
     end
@@ -548,7 +548,7 @@ function updateTouchData(x, y)
                 CurrentWordString = CurrentWordString .. selected_cell.letter
                 selected_cell.used_letter = true
                 LAST_SELECTED_CELL = {col, row} -- flipped values 
-                selectSound:play()                
+                SoundManager:play(selectSound)        
             end
             CurrentWord:setText(CurrentWordString)
             updateWordBox()

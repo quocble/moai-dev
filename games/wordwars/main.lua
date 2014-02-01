@@ -15,6 +15,8 @@ MOAIApp.setListener ( MOAIApp.BACK_BUTTON_PRESSED, onBackButtonPressed )
 Application:start(config)
 
 Settings:load()
+SoundManager:enableSound(Settings:get("sound"))
+SoundManager:enableMusic(Settings:get("music"))
 
 if Settings:get("user_id") and Settings:get("secret") then
     print("Previously authenticated")

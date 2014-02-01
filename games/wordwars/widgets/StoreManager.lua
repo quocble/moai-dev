@@ -217,7 +217,7 @@ function M:animatePurchase(new_balance)
             textBoxAnim,
             backgroundAnim)       
 
-    addCoin:play()
+    SoundManager:play(addCoin)        
 
     function completeHandler()
         superParent:removeChild(CurrentWordBox)
@@ -324,7 +324,7 @@ function M:getPanel(onBackClick, onPurchased)
 
             print("Buying product " .. product_id)
             self.buying_product = e.target.data
-            buySound:play()
+            SoundManager:play(buySound)        
 
             if MOAIBilling.requestPurchase ( product_id, '' ) then
                 print ( "purchase successfully requested" )

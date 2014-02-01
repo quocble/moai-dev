@@ -54,7 +54,7 @@ end
 
 -----------------------------------------------------------------------------------
 function onBackClick()
-    buttonSound:play()
+    SoundManager:play(buttonSound)        
     SceneManager:closeScene()
 end
 
