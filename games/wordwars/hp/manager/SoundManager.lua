@@ -13,7 +13,25 @@ function M:initialize()
     if not self.initialized then
         MOAIUntzSystem.initialize()
         self.initialized = true
+        self.enable_sound = true
+        self.enable_music = true
     end
+end
+
+function M:enableSound(enable) 
+    self.enable_sound = enable
+end
+
+function M:enableMusic(enable) 
+    self.enable_music = enable
+end
+
+function M:isSoundEnabled()
+    return self.enable_sound
+end
+
+function M:isMusicEnabled() 
+    return self.enable_music
 end
 
 ----------------------------------------------------------------

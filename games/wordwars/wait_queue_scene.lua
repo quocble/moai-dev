@@ -199,7 +199,7 @@ function updatePlayers(players)
 end
 
 function startGame(response)
-    SceneManager:openScene("game_scene", { game = response , animation = "popIn"})    
+    SceneManager:openScene("game_scene", { game = response , animation = "slideToLeft"})    
 end
 
 function onStart()

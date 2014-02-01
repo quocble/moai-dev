@@ -109,6 +109,13 @@ function M:doDownButton()
     self:dispatchEvent(M.EVENT_BUTTON_DOWN)
 end
 
+function M:setSelected(selected)
+    if selected then
+        self:doDownButton()
+    else
+        self:doUpButton()
+    end
+end
 --------------------------------------------------------------------------------
 -- Sets the text.
 -- @param text text
@@ -193,7 +200,7 @@ end
 -- @param e Touch Event
 --------------------------------------------------------------------------------
 function M:touchDownHandler(e)
-    if self._touching then
+    if self._touching and not self:isToggle() then
         return
     end
     e:stop()
@@ -201,7 +208,7 @@ function M:touchDownHandler(e)
     self._touchIndex = e.idx
     self._touching = true
     
-    if self:isToggle() and self:isButtonDown() then
+    if self:isToggle() and self:isSelected() then
         self:doUpButton()
     else
         self:doDownButton()

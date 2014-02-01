@@ -8,7 +8,7 @@ local settings_shown = false
 
 function onStartClick()
     buttonSound:play()
-    SceneManager:openScene("wait_queue_scene", { websocket = "X" , animation = "crossFade"}  )
+    SceneManager:openScene("wait_queue_scene", { animation = "slideToLeft"}  )
 end
 
 function onShopBackClick()
@@ -27,10 +27,19 @@ function onLogout()
     SceneManager:openScene("login_scene", { currentClosing = true })
 end
 
-function onMusicToggle()
+function onMusicToggle(e)
+    local enable = not e.target:isSelected()
+    SoundManager:enableMusic(enable)
+    Settings:set("music", enable)
+    Settings:save()
 end
 
-function onSoundToggle()
+function onSoundToggle(e)
+    local enable = not e.target:isSelected()
+    print("set sound to = ", enable)
+    SoundManager:enableSound(enable)
+    Settings:set("sound", enable)
+    Settings:save()
 end
 
 function onHelp()
@@ -74,10 +83,10 @@ function showSettings()
     } 
 
     buttons = { 
-        { skin = "./assets/logout_icon.png", click = onLogout },
-        { skin = "./assets/help_icon.png", click = onMusicToggle },
-        { skin = "./assets/sound_icon.png", click = onSoundToggle },
-        { skin = "./assets/music_icon.png", click = onHelp },
+        { skin = "./assets/help_icon.png", click = onHelp , toggle = false},
+        { skin = "./assets/sound_icon.png", click = onSoundToggle  ,toggle = true , state = Settings:get("sound") },
+        { skin = "./assets/music_icon.png", click = onMusicToggle , toggle = true  , state = Settings:get("music")},
+        { skin = "./assets/logout_icon.png", click = onLogout , toggle = false},
     }
     local button_holder = {}
 
@@ -91,7 +100,14 @@ function showSettings()
             styles = { ThemeManager:getTheme():buttonStyle(buttons[i].skin) },
             parent = view_settings,
             skinResizable = false,            
+            toggle = buttons[i].toggle
         }
+        if buttons[i].toggle then
+            setting_btn:setOnButtonUp(buttons[i].click)
+            setting_btn:setOnButtonDown(buttons[i].click)
+            setting_btn:setSelected(not buttons[i].state)
+        end
+
         table.insert(button_holder, setting_btn)
         setting_btn:setVisible(false)
         setting_btn:setCenterPiv()        
@@ -112,7 +128,7 @@ end
 
 function hideSetting()
     if view_settings then
-        print("hide settings")
+        print("hideSettings()")
         anim2 = Animation({ view_settings }):seekLoc(0, -90, 0, 0.25, MOAIEaseType.SOFT_SMOOTH)
                                         :wait(0.10)
         anim2:play({ onComplete = function()
@@ -232,7 +248,7 @@ function onDestroy()
 end
 
 function onTouchUp(e)
-    print("touch up()")
+    --print("touch up()")
     if view_settings then
         local scale = layer:getViewScale()
         e.x = e.x / scale
