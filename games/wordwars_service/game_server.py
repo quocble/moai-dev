@@ -97,7 +97,7 @@ class User(peewee.Model):
         return user
 
     @classmethod
-    def create_user_only(self, username):
+    def create_user_only(self, username, password):
         user = User()
         user.user_type = 1
         user.fb_token = ""
@@ -105,7 +105,7 @@ class User(peewee.Model):
         user.last_name = ""
         user.username = username
         user.user_id = username
-        user.secret = make_secret()
+        user.secret = password
         user.profile_img = ""
         user.save()
         return user        
@@ -122,6 +122,7 @@ class GameServerWebApp(tornado.web.Application):
             (r"/", MainHandler),
             (r"/ws", PlayerHandler),
             (r"/login/fb", FBLoginHandler),
+            (r"/login/user", UserLoginHandler),
             (r"/store/purchase", StorePurchaseHandler)
         ]
         settings = dict(
@@ -132,6 +133,32 @@ class GameServerWebApp(tornado.web.Application):
         )
         tornado.web.Application.__init__(self, handlers, **settings)
 
+class UserLoginHandler(tornado.web.RequestHandler):
+    def post(self):
+        data = json.loads(self.request.body)
+        user_input = data['user']
+        password_input = data['pass']
+
+        try:
+            user = User.find_user(user_input)
+        except User.DoesNotExist:
+            user = None
+
+        if user : 
+            if password_input == user.secret:
+                output = { 'user_id' : user.user_id, 
+                    'secret' : user.secret , 
+                    'username' : user.username, 
+                }
+            else:
+                output = { 'error' : "login error" }                        
+        else :
+            user = User.create_user_only(user_input, password_input)
+            output = { 'user_id' : user.user_id, 
+                    'secret' : user.secret , 
+                    'username' : user.username, 
+                  }                          
+        self.write(output)
 
 class FBLoginHandler(tornado.web.RequestHandler):
     def post(self):

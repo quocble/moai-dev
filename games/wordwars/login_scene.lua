@@ -107,7 +107,7 @@ function onStart()
 end
 
 function onResume()
-    print("onResume()")
+
 end
 
 function onPause()

@@ -20,16 +20,44 @@ function onBackClick()
 end
 
 function onRegisterClick()
---    SceneManager:closeScene({animation = "popOut"})
-    SceneManager:openScene("menu_scene", { animation = "crossFade"}  )
+    -- local previousScene = SceneManager:findSceneByName("login_scene")
+    -- previousScene.proceed_with_login = true
+
+    GameService:loginWithUsername(username_field:getText(), password_field:getText(), function(data) 
+        if data["error"] then
+            print("Some error " .. data["error"])
+        else
+            Settings:set("user_id", data["user_id"])
+            Settings:set("secret", data["secret"])
+            Settings:set("username", data["username"])
+            Settings:set("login", true)        
+            Settings:save()
+
+            print("user_id : " .. Settings:get("user_id"))
+            print("user_name : " .. Settings:get("username"))
+            print("secret : " .. Settings:get("secret"))
+            print("login successful")
+
+            SceneManager:closeScene({animation = "popOut" , onComplete = function()
+                print("pop out completed")
+               SceneManager:openScene("menu_scene", { animation = "crossFade"}  )        
+            end})
+        end
+    end)
 end
 
 function bindKeyboard()
     --MOAIKeyboardIOS.showKeyboard()
     MOAIKeyboard.setListener(MOAIKeyboard.EVENT_INPUT,function(start,length,textVal)
         if focused then
-            print("typed ", textVal , "  ", focused)
-            focused:setText(focused:getText() .. textVal);
+            print("typed ", textVal , "  ", focused, "backspace=", string.byte(textVal) == 8 , start, " ", len)
+            if textVal == "" then
+                if string.len(focused:getText()) then
+                    focused:setText( string.sub(focused:getText(), 1 , string.len(focused:getText()) - 1 ))                
+                end
+            else 
+                focused:setText(focused:getText() .. textVal);
+            end
         end
     end)
 end

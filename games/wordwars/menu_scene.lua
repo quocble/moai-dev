@@ -26,7 +26,10 @@ function onLogout()
     print("onLogout()")
     Settings:set("login", false)
     Settings:save()            
-    SceneManager:openScene("login_scene", { currentClosing = true })
+    local nextScene = SceneManager:openScene("login_scene", { currentClosing = true })
+    if not nextScene then
+        SceneManager:closeScene({ animation = "slideToRight"})
+    end
 end
 
 function onMusicToggle(e)

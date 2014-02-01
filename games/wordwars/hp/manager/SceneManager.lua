@@ -163,6 +163,10 @@ local function openComplete()
     
     M:updateRender()
     transitioning = false
+
+    if userOnComplete then
+        userOnComplete()
+    end
 end
 
 local function closeComplete()
@@ -179,6 +183,10 @@ local function closeComplete()
     
     M:updateRender()
     transitioning = false
+
+    if userOnComplete then
+        userOnComplete()
+    end
 end
 
 local function initialize()
@@ -220,7 +228,8 @@ function M:openScene(sceneName, params)
 
     params = params or {}
     currentClosing = params.currentClosing or false
-    
+    userOnComplete = params.onComplete
+
     -- get next scene
     nextScene = self:findSceneByName(sceneName)
     if nextScene then
@@ -279,6 +288,7 @@ function M:closeScene(params)
     params = params and params or {}
     closingScene = params.closingScene or currentScene
     closingScene = type(closingScene) == "string" and self:findSceneByName(closingScene) or closingScene
+    userOnComplete = params.onComplete
     
     if not closingScene then
         return

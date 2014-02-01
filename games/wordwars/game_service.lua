@@ -117,4 +117,28 @@ function M:loginWithFacebook(token, callback)
 	task:performAsync ()
 end
 
+function M:loginWithUsername(user, pass, callback)
+
+	local function onLoginFinish ( task, responseCode )
+	    print ( "login finished " .. responseCode )
+
+	    if ( task:getSize ()) then
+	        print ( task:getString ())
+	        local data = MOAIJsonParser.decode ( task:getString ())
+	        callback(data)
+	    else
+	        print ( "nothing" )
+	    end
+	end
+
+	local auth_url = "http://" .. SERVER .. "/login/user"
+	task = MOAIHttpTask.new ()
+	task:setVerb ( MOAIHttpTask.HTTP_POST )
+	task:setUrl ( auth_url )
+	task:setBody ( MOAIJsonParser.encode ( { user = user, pass = pass } ) )
+	task:setCallback ( onLoginFinish )
+	task:setUserAgent ( "Moai" )
+	task:performAsync ()
+end
+
 return M
