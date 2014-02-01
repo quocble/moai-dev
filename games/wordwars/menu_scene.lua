@@ -24,6 +24,8 @@ end
 
 function onLogout()
     print("onLogout()")
+    Settings:set("login", false)
+    Settings:save()            
     SceneManager:openScene("login_scene", { currentClosing = true })
 end
 
@@ -113,7 +115,6 @@ function showSettings()
     end   
 
     anim2 = Animation({ view_settings }):seekLoc(0, 0, 0, 0.25, MOAIEaseType.SOFT_SMOOTH)
-                                        :wait(0.10)
                                         :parallel(
                                             Animation(button_holder, 1):setVisible(true)
                                             :setScl(0.5, 0.5, 1)

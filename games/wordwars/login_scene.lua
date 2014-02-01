@@ -3,45 +3,6 @@ module(..., package.seeall)
 local string = require("hp/lang/string")
 local GAME_WIDTH = Application.viewWidth
 local GAME_HEIGHT = Application.viewHeight
-
-local FB_BUTTON_STYLES = {
-    normal = {
-        skin = "./assets/login_with_fb.png",
-        skinColor = {1, 1, 1, 1.0},
-        textColor = {1, 1, 1, 1.0},
-    },
-    selected = {
-        skin = "./assets/login_with_fb.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    over = {
-        skin = "./assets/login_with_fb.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    disabled = {
-        skin = "./assets/login_with_fb.png",
-    },
-}
-
-local EMAIL_BUTTON_STYLES = {
-    normal = {
-        skin = "./assets/login_with_email.png",
-        skinColor = {1, 1, 1, 1.0},
-        textColor = {1, 1, 1, 1.0},
-    },
-    selected = {
-        skin = "./assets/login_with_email.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    over = {
-        skin = "./assets/login_with_email.png",
-        skinColor = {0.5, 0.5, 0.5, 0.8},
-    },
-    disabled = {
-        skin = "./assets/login_with_email.png",
-    },
-}
-
 local filterMesh = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, "#000000")
 MOAIFacebook = MOAIFacebookAndroid or MOAIFacebookIOS
 MOAIFacebook.init ( "468153463310522" )
@@ -56,6 +17,7 @@ function loginSuccessCallback ()
         Settings:set("user_id", data["user_id"])
         Settings:set("secret", data["secret"])
         Settings:set("username", data["username"])
+        Settings:set("login", true)        
         Settings:save()
 
         print("user_id : " .. Settings:get("user_id"))
@@ -116,7 +78,7 @@ function onCreate(params)
         text = "",
         onClick = onLoginClicked,
         size = { 433/2, 92/2},
-        styles = { FB_BUTTON_STYLES },
+        styles = { ThemeManager:getTheme():buttonStyle("./assets/login_with_fb.png")  },
         parent = view
     }
 
@@ -125,7 +87,7 @@ function onCreate(params)
         text = "",
         onClick = onStartClick,
         size = { 433/2, 92/2},
-        styles = { EMAIL_BUTTON_STYLES },
+        styles = { ThemeManager:getTheme():buttonStyle("./assets/login_with_email.png")  },
         parent = view
     }
     fbButton:setCenterPiv()

@@ -1,7 +1,12 @@
 module(..., package.seeall)
 
 local M = {}
-M.data = {}
+M.data = {
+	sound = true,
+	music = true,
+	login = false,
+	balance = 10,
+}
 
 function M:getPath()
 	return MOAIEnvironment.documentDirectory .. "/" .. "settings.lua"
@@ -9,9 +14,6 @@ end
 
 function M:load()
 	if (MOAIFileSystem.checkFileExists(self:getPath()) == false) then
-		self.data = {
-			balance = 20
-		}
 		self:save()
 		return
 	end
@@ -35,9 +37,9 @@ function M:set(key, value)
 end
 
 function M:get(key)
-	if key == "balance" and self.data[key] == nil then
-		return 10
-	end
+	-- if key == "balance" and self.data[key] == nil then
+	-- 	return 10
+	-- end
 	return self.data[key]
 end
 
