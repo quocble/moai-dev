@@ -42,6 +42,10 @@ function onLoginClicked()
     end
 end
 
+function onEmailClicked()
+    SceneManager:openScene("create_user", { animation = "popIn"})
+end
+
 function onCreate(params)
     layer = Layer {scene = scene}
     local floor = Mesh.newRect(0, 0, GAME_WIDTH, GAME_HEIGHT, {"#CB44F3", "#8FC7CB", 90})
@@ -85,7 +89,7 @@ function onCreate(params)
     emailButton = Button {
         name = "startButton",
         text = "",
-        onClick = onStartClick,
+        onClick = onEmailClicked,
         size = { 433/2, 92/2},
         styles = { ThemeManager:getTheme():buttonStyle("./assets/login_with_email.png")  },
         parent = view

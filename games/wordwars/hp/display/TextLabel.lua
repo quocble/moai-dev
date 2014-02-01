@@ -54,6 +54,7 @@ function M:init(params)
     self:setTextSize(M.DEFAULT_TEXT_SIZE)
     self:setColor(unpack(M.DEFAULT_COLOR))
     self:copyParams(params)
+    self.currentText = ""
 end
 
 --------------------------------------------------------------------------------
@@ -97,6 +98,11 @@ end
 --------------------------------------------------------------------------------
 function M:setText(text)
     self:setString(text)
+    self.currentText = text
+end
+
+function M:getText()
+    return self.currentText
 end
 
 --------------------------------------------------------------------------------

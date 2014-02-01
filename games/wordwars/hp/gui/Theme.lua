@@ -117,14 +117,17 @@ function M:buttonStyle(skin)
                 normal = {
                     skin = skin,
                     skinColor = {1, 1, 1, 1.0},
+                    textSize = 14,                    
                 },
                 selected = {
                     skin = skin,                
                     skinColor = {0.5, 0.5, 0.5, 0.8},
+                    textSize = 14,                    
                 },
                 over = {
                     skin = skin,
                     skinColor = {0.5, 0.5, 0.5, 0.8},
+                    textSize = 14,                    
                 },
                 disabled = {
                     skin = skin,                

@@ -135,6 +135,16 @@ function M.slideToBottom(currentScene, nextScene, params)
     )
 end
 
+function M.slideModal(currentScene, nextScene, params)
+    local sec = params.sec and params.sec or defaultSecond
+    local sw, sh = currentScene:getWidth(), currentScene:getHeight()
+    return Animation():parallel(
+        createShowAnimation(nextScene, sec)
+            :setLeft(0):setTop(sh)
+            :moveLoc(0, -sh, 0)
+            :setTop(0)
+    )
+end
 --------------------------------------------------------------------------------
 -- Slide the left.
 --------------------------------------------------------------------------------
