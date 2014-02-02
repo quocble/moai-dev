@@ -40,6 +40,7 @@ local SENT_BAD_WORD = false
 local CURRENT_MAX_STREAK = 0
 local BLACKED_OUT_TILES = { }
 local ALL_TIME_MAX_STREAK = 0
+local LETTER_VALUES = { }
 
 local CURRENT_WORD_LENGTH = 0
 local ALL_TIME_MAX_WORD_LENGTH = 0
@@ -72,6 +73,7 @@ color.RED = string.hexToRGB( "#FF4136", true)
 color.LIME = string.hexToRGB( "#01FF70", true )
 color.BLUE = string.hexToRGB("#0074D9", true)
 color.BLACK = string.hexToRGB("#111111", true)
+color.WHITE = string.hexToRGB("#FFFFFF", true)
 
 --------------------------------------------------------------------------------
 -- Network functions
@@ -81,6 +83,7 @@ color.BLACK = string.hexToRGB("#111111", true)
 function setupGame(response)
     PLAYER_ID = response["your_index"]
     PLAYER_NAMES = response["players"]
+    setBoardValues(response["letter_values"])
     makeRemoteBoard(response["board"])
     makePlayers(response["players"])
     setGameTimer(response["game_time"])
@@ -206,6 +209,17 @@ function onTouchUp(e)
         CURRENT_MAX_STREAK = 0
         updateStreak(CURRENT_MAX_STREAK)
     end
+    ------------------
+    --power up testing
+    ------------------
+    -- local tile_1 = { row = 1, col = 1}
+    -- local tile_2 = { row = 1, col = 3}
+    -- swapTiles(tile_1, tile_2)
+    ------------------
+    -- timerBoost(60)
+    ------------------
+    -- local letter = "A"
+    -- doublePointLetter(letter)
 end
 
 function onBackClick()
@@ -265,7 +279,7 @@ function buildAndShuffle()
     return bag
 end
 
-function makeLetter(p, c, r)
+function makeLetter(p, c, r, v)
     
     local left, top = (c-1) * cell_w , (r-1) * cell_h 
     local margin = 2
@@ -288,10 +302,25 @@ function makeLetter(p, c, r)
         color = string.hexToRGB( "#4C5659", true ),
         align = {"center", "center"}
     }
+
+    local letter = p["letter"]
+    local letterValue = LETTER_VALUES[letter]
+    valueLabel = TextLabel {
+        text = tostring(letterValue),
+        textSize = 14,
+        layer = guiView,
+        color = color.BLUE,
+        size = {cell_w/4, cell_h/4},
+        pos = { left + cell_w - 25, top + 10},
+        align = {"center", "center"},
+    }
     -- sprite1:setVisible(false)
     sprite1.touching = false 
     p["sprite"] = sprite1
     p["levelLabel"] = levelLabel
+    p["valueLabel"] = valueLabel
+    p["letterValue"] = letterValue
+    p["isDoubled"] = false
 
 end
 
@@ -499,6 +528,14 @@ function makeStreakBox()
     }
     STREAK_BOX:setTextSize(15)
 end
+
+function setBoardValues(letter_values)
+    LETTER_VALUES = letter_values
+    printTable(letter_values)
+end
+
+function makePowerUps()
+end
 --------------------------------------------------------------------------------
 -- Update logic
 --------------------------------------------------------------------------------
@@ -667,18 +704,22 @@ function execPowerUp(response)
 
     elseif power_up_type == 'double_point' then
         power_up.letter = response['letter']
+        doublePointLetter(power_up.letter)
         -- TODO
         -- Change letter display value
     elseif power_up_type == 'shuffle' then
         power_up.new_game_board = response['new_game_board']
+        makeRemoteBoard(power_up.new_game_board)
         -- TODO
         -- Destroy old board
         -- Recreate new board
     elseif power_up_type == 'swap' then
         power_up.tiles = response['tiles']
+        swapTiles(power_up.tiles) -- format, .tiles = { {1,1}, {1,2} }
 
     elseif power_up_type == 'timer_boost' then
         power_up.new_time = response['new_time']
+        timerBoost(power_up.new_time)
         -- TODO
         -- Update game timer
     end
@@ -693,21 +734,73 @@ end
 function swapTiles(tile_1, tile_2)
     local tile_1_pos_x, tile_1_pos_y = GameBoard[tile_1['row']][tile_1['col']]['levelLabel']:getPos()
     local tile_2_pos_x, tile_2_pos_y = GameBoard[tile_2['row']][tile_2['col']]['levelLabel']:getPos()
-    GameBoard[tile_1['row']][tile_1['col']]['levelLabel']:setPos(tile_2_pos_x, tile_2_pos_y)
-    GameBoard[tile_2['row']][tile_2['col']]['levelLabel']:setPos(tile_1_pos_x, tile_1_pos_y)
-    print(tile_1_pos_x .. tile_1_pos_y)
-    print(tile_2_pos_x .. tile_2_pos_y)
+    -- GameBoard[tile_1['row']][tile_1['col']]['levelLabel']:setPos(tile_2_pos_x, tile_2_pos_y)
+    -- GameBoard[tile_2['row']][tile_2['col']]['levelLabel']:setPos(tile_1_pos_x, tile_1_pos_y)
+    print("Tile 1 x: " .. tile_1_pos_x .. "Tile 1 y: " .. tile_1_pos_y)
+    print("Tile 2 x: " .. tile_2_pos_x  .. "Tile 2 y: " .. tile_2_pos_y)
 
-    local tile_1_pos_x, tile_1_pos_y = GameBoard[tile_1['row']][tile_1['col']]['sprite']:getPos()
-    local tile_2_pos_x, tile_2_pos_y = GameBoard[tile_2['row']][tile_2['col']]['sprite']:getPos()
-    GameBoard[tile_1['row']][tile_1['col']]['sprite']:setPos(tile_2_pos_x, tile_2_pos_y)
-    GameBoard[tile_2['row']][tile_2['col']]['sprite']:setPos(tile_1_pos_x, tile_1_pos_y)    
+    tile_1_move_x = tile_2_pos_x - tile_1_pos_x
+    tile_1_move_y = tile_2_pos_y - tile_1_pos_y
+    tile_2_move_x = tile_1_pos_x - tile_2_pos_x
+    tile_2_move_y = tile_1_pos_y - tile_2_pos_y
 
+    local sprite_1_pos_x, sprite_1_pos_y = GameBoard[tile_1['row']][tile_1['col']]['sprite']:getPos()
+    local sprite_2_pos_x, sprite_2_pos_y = GameBoard[tile_2['row']][tile_2['col']]['sprite']:getPos()
+    -- GameBoard[tile_1['row']][tile_1['col']]['sprite']:setPos(tile_2_pos_x, tile_2_pos_y)
+    -- GameBoard[tile_2['row']][tile_2['col']]['sprite']:setPos(tile_1_pos_x, tile_1_pos_y)    
+
+    local anim = Animation { GameBoard[tile_1['row']][tile_1['col']]['levelLabel'], GameBoard[tile_2['row']][tile_2['col']]['levelLabel'],
+                            GameBoard[tile_1['row']][tile_1['col']]['sprite'], GameBoard[tile_2['row']][tile_2['col']]['sprite']}
+            :parallel(
+            Animation(GameBoard[tile_1['row']][tile_1['col']]['levelLabel']):moveLoc(tile_1_move_x, tile_1_move_y),
+            Animation(GameBoard[tile_1['row']][tile_1['col']]['sprite']):moveLoc(tile_1_move_x, tile_1_move_y),
+            Animation(GameBoard[tile_2['row']][tile_2['col']]['levelLabel']):moveLoc(tile_2_move_x, tile_2_move_y),
+            Animation(GameBoard[tile_2['row']][tile_2['col']]['sprite']):moveLoc(tile_2_move_x, tile_2_move_y)
+            )
+    anim:play()
+
+    -- print("Tile 1 x: " .. tile_1_pos_x .. "Tile 1 y: " .. tile_1_pos_y)
+    -- print("Tile 2 x: " .. tile_2_pos_x  .. "Tile 2 y: " .. tile_2_pos_y)
 
     GameBoard[tile_1['row']][tile_1['col']], GameBoard[tile_2['row']][tile_2['col']] = 
         GameBoard[tile_2['row']][tile_2['col']], GameBoard[tile_1['row']][tile_1['col']]
 end
 
+function doublePointLetter(letter)
+    for r=1,BOARD_SIZE["width"] do
+      for c=1,BOARD_SIZE["height"] do
+        if GameBoard[r][c]["letter"] == letter and not GameBoard[r][c]["isDoubled"] then
+            -- print("Incoming letter: " .. letter .. " Compared value: " .. GameBoard[r][c]["letter"])
+            -- print("letter value: " .. GameBoard[r][c]["letterValue"])
+            local new_value = tonumber(GameBoard[r][c]["letterValue"]) * 2
+            GameBoard[r][c]["letterValue"] = new_value
+            GameBoard[r][c]["isDoubled"] = true
+            GameBoard[r][c]["valueLabel"]:setText(tostring(new_value))
+        end
+      end
+    end
+end
+
+function halvePointLetter(letter)
+    for r=1,BOARD_SIZE["width"] do
+      for c=1,BOARD_SIZE["height"] do
+        if GameBoard[r][c]["letter"] == letter and GameBoard[r][c]["isDoubled"] then
+            -- print("Incoming letter: " .. letter .. " Compared value: " .. GameBoard[r][c]["letter"])
+            -- print("letter value: " .. GameBoard[r][c]["letterValue"])
+            local new_value = tonumber(GameBoard[r][c]["letterValue"]) / 2
+            GameBoard[r][c]["letterValue"] = new_value
+            GameBoard[r][c]["isDoubled"] = false
+            GameBoard[r][c]["valueLabel"]:setText(tostring(new_value))
+        end
+      end
+    end
+end
+
+function timerBoost(new_time)
+    LAST_TIMESTAMP = 0
+    GameTimer:setColor(unpack(color.WHITE))
+    GAME_TIME_SEC = new_time
+end
 --------------------------------------------------------------------------------
 -- Common logic
 --------------------------------------------------------------------------------
