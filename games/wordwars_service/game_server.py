@@ -393,6 +393,7 @@ class PlayerHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         print("client connected")
+        self.current_game = None
         PlayerHandler.waiters.add(self)
 
     def queue(self):
